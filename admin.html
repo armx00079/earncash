@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{margin:0;font-family:Arial;background:#f4f6f8}
 header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20px}
@@ -88,10 +87,10 @@ onAuthStateChanged(auth,async user=>{
 
 async function loadDashboard(){
  const users=await getDocs(collection(db,"users"));
- document.getElementById("totalUsers").innerText=users.size;
+ totalUsers.innerText=users.size;
 
  let totalDep=0,pendingDep=0,todayDep=0;
- const deposits=await getDocs(collection(db,"depositRequests"));
+ const deposits=await getDocs(collection(db,"depositReq"));
 
  deposits.forEach(d=>{
    const x=d.data();
@@ -101,9 +100,9 @@ async function loadDashboard(){
      todayDep+=x.amount;
  });
 
- document.getElementById("totalDeposits").innerText=totalDep;
- document.getElementById("pendingDeposits").innerText=pendingDep;
- document.getElementById("todayDeposit").innerText=todayDep;
+ totalDeposits.innerText=totalDep;
+ pendingDeposits.innerText=pendingDep;
+ todayDeposit.innerText=todayDep;
 
  let pendingW=0,todayW=0;
  const withdraws=await getDocs(collection(db,"withdrawRequests"));
@@ -115,21 +114,20 @@ async function loadDashboard(){
      todayW+=x.amount;
  });
 
- document.getElementById("pendingWithdraw").innerText=pendingW;
- document.getElementById("todayWithdraw").innerText=todayW;
- document.getElementById("todayProfit").innerText=todayDep-todayW;
+ pendingWithdraw.innerText=pendingW;
+ todayWithdraw.innerText=todayW;
+ todayProfit.innerText=todayDep-todayW;
 
  renderDeposits(deposits);
  renderWithdraws(withdraws);
 }
 
 function renderDeposits(snapshot){
- const box=document.getElementById("depositList");
- box.innerHTML="";
+ depositList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
   if(x.status!=="Pending") return;
-  box.innerHTML+=`
+  depositList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
     Amount: ₹${x.amount}<br>
@@ -140,23 +138,22 @@ function renderDeposits(snapshot){
 }
 
 window.approveDeposit=async(id,uid,amt)=>{
- await updateDoc(doc(db,"depositRequests",id),{status:"Approved"});
+ await updateDoc(doc(db,"depositReq",id),{status:"Approved"});
  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
  location.reload();
 };
 
 window.rejectDeposit=async(id)=>{
- await updateDoc(doc(db,"depositRequests",id),{status:"Rejected"});
+ await updateDoc(doc(db,"depositReq",id),{status:"Rejected"});
  location.reload();
 };
 
 function renderWithdraws(snapshot){
- const box=document.getElementById("withdrawList");
- box.innerHTML="";
+ withdrawList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
   if(x.status!=="Pending") return;
-  box.innerHTML+=`
+  withdrawList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
     Amount: ₹${x.amount}<br>
