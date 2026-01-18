@@ -1,78 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Spin & Earn</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spin & Earn</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#f4f6f8;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.card{
-  background:#fff;
-  padding:25px;
-  width:90%;
-  max-width:380px;
-  border-radius:10px;
+  background:#f2f2f2;
   text-align:center;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-h2{margin-bottom:10px;}
-.balance{
+.header{
+  background:#5a189a;
+  color:white;
+  padding:15px;
   font-size:20px;
-  color:green;
-  margin:15px 0;
+}
+.wallet-box{
+  background:#5a189a;
+  color:white;
+  margin:15px;
+  padding:15px;
+  border-radius:15px;
+  display:flex;
+  justify-content:space-around;
+}
+.wallet-box div{
+  text-align:center;
+}
+.wheel-box{
+  margin-top:20px;
+}
+#wheel{
+  width:280px;
+  height:280px;
+  border-radius:50%;
+  border:12px solid #5a189a;
+  background:conic-gradient(
+    #6a1b9a 0deg 40deg,
+    #7b1fa2 40deg 80deg,
+    #8e24aa 80deg 120deg,
+    #9c27b0 120deg 160deg,
+    #ab47bc 160deg 200deg,
+    #8e24aa 200deg 240deg,
+    #7b1fa2 240deg 280deg,
+    #6a1b9a 280deg 320deg,
+    #4a148c 320deg 360deg
+  );
+  margin:auto;
+  transition:transform 4s ease-out;
+}
+.pointer{
+  width:0;
+  height:0;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-bottom:25px solid red;
+  margin:auto;
+  margin-bottom:-10px;
 }
 button{
-  padding:12px 22px;
-  border:none;
-  border-radius:6px;
-  background:#ff9800;
+  margin-top:25px;
+  padding:12px 30px;
+  font-size:18px;
+  background:#7b1fa2;
   color:white;
-  font-size:16px;
-  cursor:pointer;
+  border:none;
+  border-radius:25px;
 }
-button:disabled{
-  background:#ccc;
-}
-.msg{
-  margin-top:15px;
-  font-weight:bold;
+a{
+  display:block;
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h2>🎯 Spin & Earn</h2>
-  <p id="name">Loading...</p>
-  <div class="balance">
-    Balance: <span id="balance">0</span> Coins
+<div class="header">RozanaCash</div>
+
+<div class="wallet-box">
+  <div>
+    Wallet<br>₹ <span id="wallet">0</span>
   </div>
-
-  <button id="spinBtn">SPIN</button>
-
-  <div class="msg" id="msg"></div>
-
-  <br><br>
-  <a href="dashboard.html">⬅ Back to Dashboard</a>
+  <div>
+    Winning<br>₹ <span id="winning">0</span>
+  </div>
 </div>
+
+<div class="pointer"></div>
+<div class="wheel-box">
+  <div id="wheel"></div>
+</div>
+
+<button id="spinBtn">SPIN</button>
+<a href="dashboard.html">⬅ Back to Dashboard</a>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-  getAuth, 
-  onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore,
   doc,
@@ -81,7 +108,6 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
   authDomain: "earncash7-f0ecc.firebaseapp.com",
@@ -93,46 +119,41 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser;
+const wheel = document.getElementById("wheel");
+const rewards = [0,20,40,60,100,150,200,-50];
 
-/* 🔐 CHECK LOGIN */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-  } else {
-    currentUser = user;
-    document.getElementById("name").innerText =
-      "Welcome " + user.displayName;
+let angle = 0;
 
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    document.getElementById("balance").innerText =
-      snap.data().balance;
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    window.location.href="index.html";
+    return;
   }
+
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+
+  document.getElementById("wallet").innerText = snap.data().balance;
+  document.getElementById("winning").innerText = snap.data().totalEarned;
+
+  document.getElementById("spinBtn").onclick = async ()=>{
+    const reward = rewards[Math.floor(Math.random()*rewards.length)];
+    angle += 1440 + Math.random()*360;
+    wheel.style.transform = `rotate(${angle}deg)`;
+
+    setTimeout(async ()=>{
+      await updateDoc(userRef,{
+        balance: increment(reward),
+        totalEarned: increment(reward)
+      });
+
+      alert("You won ₹ " + reward);
+      const updated = await getDoc(userRef);
+      document.getElementById("wallet").innerText = updated.data().balance;
+      document.getElementById("winning").innerText = updated.data().totalEarned;
+    },4000);
+  };
 });
-
-/* 🎰 SPIN LOGIC */
-document.getElementById("spinBtn").onclick = async () => {
-  const reward = Math.floor(Math.random() * 10) + 1;
-
-  document.getElementById("spinBtn").disabled = true;
-
-  const ref = doc(db, "users", currentUser.uid);
-
-  await updateDoc(ref, {
-    balance: increment(reward),
-    totalEarned: increment(reward)
-  });
-
-  const snap = await getDoc(ref);
-  document.getElementById("balance").innerText =
-    snap.data().balance;
-
-  document.getElementById("msg").innerText =
-    "🎉 You won " + reward + " coins!";
-
-  document.getElementById("spinBtn").disabled = false;
-};
 </script>
 
 </body>
