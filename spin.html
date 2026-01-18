@@ -1,77 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<title>RozanaCash – Spin & Earn</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Spin & Earn</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#f2f2f2;
   text-align:center;
 }
+
 .header{
   background:#5a189a;
   color:white;
   padding:15px;
   font-size:20px;
 }
+
 .wallet-box{
   background:#5a189a;
   color:white;
   margin:15px;
+  border-radius:12px;
   padding:15px;
-  border-radius:15px;
   display:flex;
   justify-content:space-around;
 }
-.wallet-box div{
-  text-align:center;
-}
-.wheel-box{
-  margin-top:20px;
-}
+
 #wheel{
   width:280px;
   height:280px;
   border-radius:50%;
-  border:12px solid #5a189a;
+  border:12px solid #4a148c;
   background:conic-gradient(
-    #6a1b9a 0deg 40deg,
-    #7b1fa2 40deg 80deg,
-    #8e24aa 80deg 120deg,
-    #9c27b0 120deg 160deg,
-    #ab47bc 160deg 200deg,
-    #8e24aa 200deg 240deg,
-    #7b1fa2 240deg 280deg,
-    #6a1b9a 280deg 320deg,
-    #4a148c 320deg 360deg
+    #7b2cbf 0deg 45deg,
+    #9d4edd 45deg 90deg,
+    #5a189a 90deg 135deg,
+    #7b2cbf 135deg 180deg,
+    #9d4edd 180deg 225deg,
+    #5a189a 225deg 270deg,
+    #7b2cbf 270deg 315deg,
+    #9d4edd 315deg 360deg
   );
-  margin:auto;
+  margin:30px auto;
   transition:transform 4s ease-out;
 }
+
 .pointer{
   width:0;
   height:0;
-  border-left:15px solid transparent;
-  border-right:15px solid transparent;
-  border-bottom:25px solid red;
+  border-left:12px solid transparent;
+  border-right:12px solid transparent;
+  border-bottom:20px solid red;
   margin:auto;
-  margin-bottom:-10px;
 }
+
 button{
-  margin-top:25px;
   padding:12px 30px;
-  font-size:18px;
-  background:#7b1fa2;
+  background:#7b2cbf;
   color:white;
   border:none;
-  border-radius:25px;
+  border-radius:20px;
+  font-size:18px;
+  cursor:pointer;
 }
+
 a{
   display:block;
-  margin-top:20px;
+  margin-top:15px;
+  color:#5a189a;
 }
 </style>
 </head>
@@ -81,25 +81,24 @@ a{
 <div class="header">RozanaCash</div>
 
 <div class="wallet-box">
-  <div>
-    Wallet<br>₹ <span id="wallet">0</span>
-  </div>
-  <div>
-    Winning<br>₹ <span id="winning">0</span>
-  </div>
+  <div>Wallet<br>₹ <span id="balance">0</span></div>
+  <div>Winning<br>₹ <span id="winning">0</span></div>
 </div>
 
 <div class="pointer"></div>
-<div class="wheel-box">
-  <div id="wheel"></div>
-</div>
+<div id="wheel"></div>
 
 <button id="spinBtn">SPIN</button>
-<a href="dashboard.html">⬅ Back to Dashboard</a>
+
+<a href="dashboard.html">← Back to Dashboard</a>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 import {
   getFirestore,
   doc,
@@ -108,6 +107,7 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// 🔥 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
   authDomain: "earncash7-f0ecc.firebaseapp.com",
@@ -119,10 +119,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+const rewards = [10,20,60,0,40,100,-20,150];
 const wheel = document.getElementById("wheel");
-const rewards = [0,20,40,60,100,150,200,-50];
+const spinBtn = document.getElementById("spinBtn");
 
-let angle = 0;
+let userRef;
+let spinning = false;
 
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
@@ -130,30 +132,38 @@ onAuthStateChanged(auth, async (user)=>{
     return;
   }
 
-  const userRef = doc(db,"users",user.uid);
+  userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
 
-  document.getElementById("wallet").innerText = snap.data().balance;
-  document.getElementById("winning").innerText = snap.data().totalEarned;
-
-  document.getElementById("spinBtn").onclick = async ()=>{
-    const reward = rewards[Math.floor(Math.random()*rewards.length)];
-    angle += 1440 + Math.random()*360;
-    wheel.style.transform = `rotate(${angle}deg)`;
-
-    setTimeout(async ()=>{
-      await updateDoc(userRef,{
-        balance: increment(reward),
-        totalEarned: increment(reward)
-      });
-
-      alert("You won ₹ " + reward);
-      const updated = await getDoc(userRef);
-      document.getElementById("wallet").innerText = updated.data().balance;
-      document.getElementById("winning").innerText = updated.data().totalEarned;
-    },4000);
-  };
+  if(snap.exists()){
+    document.getElementById("balance").innerText = snap.data().balance;
+    document.getElementById("winning").innerText = snap.data().totalEarned;
+  }
 });
+
+spinBtn.onclick = async ()=>{
+  if(spinning) return;
+  spinning = true;
+
+  const reward = rewards[Math.floor(Math.random()*rewards.length)];
+  const degree = 360*5 + Math.floor(Math.random()*360);
+
+  wheel.style.transform = `rotate(${degree}deg)`;
+
+  setTimeout(async ()=>{
+    await updateDoc(userRef,{
+      balance: increment(reward),
+      totalEarned: increment(reward)
+    });
+
+    const snap = await getDoc(userRef);
+    document.getElementById("balance").innerText = snap.data().balance;
+    document.getElementById("winning").innerText = snap.data().totalEarned;
+
+    alert("🎉 You got: "+reward+" coins");
+    spinning = false;
+  },4000);
+};
 </script>
 
 </body>
