@@ -57,9 +57,22 @@ canvas{
   font-size:18px;
   font-weight:bold;
 }
+.back{
+  margin-top:12px;
+}
 .back a{
   text-decoration:none;
   color:#5e239d;
+  font-weight:bold;
+}
+.history-btn{
+  margin-top:10px;
+  padding:10px 22px;
+  border:none;
+  border-radius:20px;
+  background:#5e239d;
+  color:white;
+  font-size:15px;
 }
 </style>
 </head>
@@ -84,9 +97,15 @@ canvas{
   <canvas id="wheel" width="300" height="300"></canvas>
   <br>
   <button class="spin-btn" id="spinBtn">SPIN</button>
+
   <div class="back">
     <a href="dashboard.html">← Back to Dashboard</a>
   </div>
+
+  <!-- ✅ MY HISTORY BUTTON (ADDED HERE) -->
+  <button class="history-btn" onclick="location.href='history.html'">
+    📜 My History
+  </button>
 </div>
 
 <script type="module">
@@ -105,7 +124,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🎯 WHEEL DATA (EXACT) */
+/* 🎯 WHEEL DATA */
 const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
 const spinCost=20;
@@ -149,7 +168,7 @@ onAuthStateChanged(auth,async user=>{
  winning.innerText=snap.data().totalEarned;
 });
 
-/* 🎰 SPIN LOGIC (MATCH FIXED) */
+/* 🎰 SPIN LOGIC */
 spinBtn.onclick=async()=>{
  const snap=await getDoc(userRef);
  if(snap.data().balance < spinCost){
@@ -181,9 +200,7 @@ spinBtn.onclick=async()=>{
 };
 
 window.deposit = ()=>location.href="deposit.html";
-window.withdraw = () => {
-  location.href = "withdraw.html";
-};
+window.withdraw = ()=>location.href="withdraw.html";
 </script>
 
 </body>
