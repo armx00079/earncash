@@ -38,24 +38,7 @@ body{
 .wheel-box{
   text-align:center;
   margin-top:20px;
-}
-.wheel{
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  background:conic-gradient(
-    #6a1bb1 0deg 45deg,
-    #7b2cbf 45deg 90deg,
-    #8e44ad 90deg 135deg,
-    #9b59b6 135deg 180deg,
-    #6a1bb1 180deg 225deg,
-    #7b2cbf 225deg 270deg,
-    #8e44ad 270deg 315deg,
-    #9b59b6 315deg 360deg
-  );
-  margin:auto;
   position:relative;
-  transition:transform 3s ease-out;
 }
 .pointer{
   width:0;
@@ -64,6 +47,37 @@ body{
   border-right:15px solid transparent;
   border-bottom:25px solid red;
   margin:auto;
+}
+.wheel-container{
+  position:relative;
+  width:280px;
+  height:280px;
+  margin:auto;
+}
+.wheel{
+  width:280px;
+  height:280px;
+  border-radius:50%;
+  background:conic-gradient(
+    #4b148b 0deg 45deg,
+    #6a1bb1 45deg 90deg,
+    #7b2cbf 90deg 135deg,
+    #8e44ad 135deg 180deg,
+    #4b148b 180deg 225deg,
+    #6a1bb1 225deg 270deg,
+    #7b2cbf 270deg 315deg,
+    #8e44ad 315deg 360deg
+  );
+  transition:transform 3s ease-out;
+}
+.label{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform-origin:0 0;
+  font-weight:bold;
+  color:white;
+  font-size:16px;
 }
 .spin-btn{
   margin-top:20px;
@@ -90,20 +104,31 @@ body{
 
 <div class="card">
   <div>
-    Wallet ₹<span id="wallet">0</span>
-    <br>
+    Wallet ₹<span id="wallet">0</span><br>
     <button onclick="openDeposit()">More Spin</button>
   </div>
   <div>
-    Winning ₹<span id="winning">0</span>
-    <br>
+    Winning ₹<span id="winning">0</span><br>
     <button onclick="withdraw()">Withdraw</button>
   </div>
 </div>
 
 <div class="wheel-box">
   <div class="pointer"></div>
-  <div class="wheel" id="wheel"></div>
+
+  <div class="wheel-container">
+    <div class="wheel" id="wheel"></div>
+
+    <!-- NUMBER LABELS -->
+    <div class="label" style="transform:rotate(0deg) translate(110px,-10px)">20</div>
+    <div class="label" style="transform:rotate(45deg) translate(110px,-10px)">40</div>
+    <div class="label" style="transform:rotate(90deg) translate(110px,-10px)">60</div>
+    <div class="label" style="transform:rotate(135deg) translate(110px,-10px)">-20</div>
+    <div class="label" style="transform:rotate(180deg) translate(110px,-10px)">100</div>
+    <div class="label" style="transform:rotate(225deg) translate(110px,-10px)">130</div>
+    <div class="label" style="transform:rotate(270deg) translate(110px,-10px)">150</div>
+    <div class="label" style="transform:rotate(315deg) translate(110px,-10px)">200</div>
+  </div>
 
   <button class="spin-btn" id="spinBtn">SPIN</button>
 
@@ -130,7 +155,7 @@ const db = getFirestore(app);
 
 const spinCost = 20;
 
-// ADMIN CONTROL
+// ADMIN CONTROL (LOSS ZYADA – WIN KAM)
 const rewards = [
   { value: 0, weight: 40 },
   { value: 10, weight: 30 },
@@ -156,8 +181,8 @@ onAuthStateChanged(auth, async(user)=>{
   }
   userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
-  document.getElementById("wallet").innerText = snap.data().balance;
-  document.getElementById("winning").innerText = snap.data().totalEarned;
+  wallet.innerText = snap.data().balance;
+  winning.innerText = snap.data().totalEarned;
 });
 
 spinBtn.onclick = async()=>{
@@ -170,7 +195,7 @@ spinBtn.onclick = async()=>{
   }
 
   const reward = getReward();
-  const angle = Math.floor(Math.random()*360) + 720;
+  const angle = Math.floor(Math.random()*360) + 1080;
   wheel.style.transform = `rotate(${angle}deg)`;
 
   await updateDoc(userRef,{
@@ -187,12 +212,11 @@ spinBtn.onclick = async()=>{
 };
 
 window.openDeposit = ()=>{
-  alert("💰 Deposit system (UPI) next step");
+  alert("💰 Deposit (UPI) next step");
 };
 
 window.withdraw = ()=>{
-  const win = parseInt(winning.innerText);
-  if(win < 500){
+  if(parseInt(winning.innerText) < 500){
     alert("❌ Minimum withdrawal ₹500");
   }else{
     alert("✅ Withdraw request submitted");
