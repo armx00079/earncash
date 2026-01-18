@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RozanaCash – Deposit</title>
+<title>Add Money – RozanaCash</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -13,120 +13,116 @@ body{
 }
 .header{
   background:#5e239d;
-  color:#fff;
+  color:white;
   text-align:center;
   padding:15px;
   font-size:20px;
 }
-.wallet{
-  background:#5e239d;
-  color:#fff;
-  margin:15px;
+.box{
+  background:white;
+  margin:20px;
+  padding:20px;
   border-radius:15px;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-}
-.pack-box{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-  padding:15px;
-}
-.pack{
-  background:#dddaf5;
-  border-radius:15px;
-  padding:15px;
   text-align:center;
+}
+.amount{
+  font-size:22px;
+  margin-bottom:10px;
+}
+.qr{
+  margin:15px 0;
+}
+button{
+  background:#5e239d;
+  color:white;
+  border:none;
+  padding:12px 25px;
+  border-radius:25px;
+  font-size:16px;
   cursor:pointer;
 }
-.pack.active{
-  background:#5e239d;
-  color:#fff;
+.back{
+  margin-top:15px;
 }
-.add-btn{
-  margin:20px;
-  background:#5e239d;
-  color:#fff;
-  border:none;
-  width:calc(100% - 40px);
-  padding:15px;
-  border-radius:30px;
-  font-size:18px;
+.back a{
+  text-decoration:none;
+  color:#5e239d;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">RozanaCash</div>
+<div class="header">Add Money</div>
 
-<div class="wallet">
-  <div>Wallet ₹<span id="wallet">0</span></div>
-  <div>Winning ₹<span id="winning">0</span></div>
+<div class="box">
+  <div class="amount">Amount: ₹<span id="amt">100</span></div>
+
+  <!-- QR CODE -->
+  <div class="qr">
+    <img id="qrImg" width="200">
+  </div>
+
+  <button onclick="payNow()">Pay via UPI App</button>
+
+  <div class="back">
+    <a href="dashboard.html">← Back</a>
+  </div>
 </div>
-
-<div class="pack-box">
-  <div class="pack" onclick="selectPack(5,100,this)">Spin 5<br><b>₹100</b></div>
-  <div class="pack" onclick="selectPack(10,199,this)">Spin 10<br><b>₹199</b></div>
-  <div class="pack" onclick="selectPack(15,298,this)">Spin 15<br><b>₹298</b></div>
-  <div class="pack" onclick="selectPack(20,400,this)">Spin 20<br><b>₹400</b></div>
-  <div class="pack" onclick="selectPack(25,498,this)">Spin 25<br><b>₹498</b></div>
-  <div class="pack" onclick="selectPack(30,599,this)">Spin 30<br><b>₹599</b></div>
-</div>
-
-<button class="add-btn" onclick="addMoney()">Add Money</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,doc,getDoc,addDoc,collection,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain:"earncash7-f0ecc.firebaseapp.com",
-  projectId:"earncash7-f0ecc",
-  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain: "earncash7-f0ecc.firebaseapp.com",
+  projectId: "earncash7-f0ecc",
+  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let selected = null;
-let userRef, uid;
+// CHANGE THIS 👇
+const UPI_ID = "8302299569@ybl";
+const PAYEE_NAME = "RozanaCash";
 
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){ location.href="index.html"; return; }
-  uid = user.uid;
-  userRef = doc(db,"users",uid);
-  const snap = await getDoc(userRef);
-  wallet.innerText = snap.data().balance;
-  winning.innerText = snap.data().totalEarned;
+const amount = 100;
+document.getElementById("amt").innerText = amount;
+
+// QR GENERATE
+const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${PAYEE_NAME}&am=${amount}&cu=INR`;
+document.getElementById("qrImg").src =
+  `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
+
+let currentUser;
+
+onAuthStateChanged(auth,user=>{
+  if(!user){
+    location.href="index.html";
+  }
+  currentUser = user;
 });
 
-window.selectPack = (spins,amount,el)=>{
-  document.querySelectorAll('.pack').forEach(p=>p.classList.remove("active"));
-  el.classList.add("active");
-  selected = { spins, amount };
-};
+window.payNow = async()=>{
+  // Open UPI app
+  window.location.href = upiUrl;
 
-window.addMoney = async()=>{
-  if(!selected){ alert("Select a pack"); return; }
-
-  // 🔔 Fake UPI open (demo)
-  alert("Pay ₹"+selected.amount+" via UPI");
-
-  await addDoc(collection(db,"depositRequests"),{
-    uid,
-    spins:selected.spins,
-    amount:selected.amount,
-    status:"pending",
-    createdAt:serverTimestamp()
+  // Save deposit request
+  await addDoc(collection(db,"deposits"),{
+    uid: currentUser.uid,
+    amount: amount,
+    spins: 5,
+    status: "pending",
+    createdAt: serverTimestamp()
   });
 
-  alert("Payment submitted. Spins added after admin approval.");
+  alert("✅ Payment initiated. Spins added after admin approval.");
 };
 </script>
+
 </body>
 </html>
