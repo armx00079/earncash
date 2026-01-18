@@ -1,125 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>RozanaCash Spin</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#f2f2f2;
-  padding-bottom:90px;
-}
-.header{
-  background:#5e239d;
-  color:#fff;
-  text-align:center;
-  padding:14px;
-  font-size:20px;
-}
-.card{
-  background:#5e239d;
-  color:white;
-  margin:15px;
-  border-radius:16px;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-}
-.card button{
-  background:#fff;
-  border:none;
-  padding:8px 14px;
-  border-radius:20px;
-  font-weight:bold;
-}
-.wheel-box{
-  text-align:center;
-  margin-top:20px;
-}
-.pointer{
-  width:0;height:0;
-  border-left:15px solid transparent;
-  border-right:15px solid transparent;
-  border-bottom:25px solid red;
-  margin:auto;
-}
-canvas{margin-top:10px;}
-.spin-btn{
-  margin-top:20px;
-  background:#ffcc00;
-  border:none;
-  padding:14px 40px;
-  border-radius:30px;
-  font-size:18px;
-  font-weight:bold;
-}
-.back a{
-  text-decoration:none;
-  color:#5e239d;
-  font-weight:bold;
-}
-
-/* 🔥 BOTTOM NAV (TRUSTED UI) */
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#5e239d;
-  display:flex;
-  justify-content:space-around;
-  padding:12px 0;
-  border-radius:20px 20px 0 0;
-  box-shadow:0 -2px 10px rgba(0,0,0,0.2);
-}
-.bottom-nav button{
-  background:white;
-  border:none;
-  padding:10px 18px;
-  border-radius:25px;
-  font-size:14px;
-  font-weight:bold;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">RozanaCash</div>
-
-<div class="card">
-  <div>
-    Wallet ₹<span id="wallet">0</span><br>
-    <button onclick="deposit()">More Spin</button>
-  </div>
-  <div>
-    Winning ₹<span id="winning">0</span><br>
-    <button onclick="withdraw()">Withdraw</button>
-  </div>
-</div>
-
-<div class="wheel-box">
-  <div class="pointer"></div>
-  <canvas id="wheel" width="300" height="300"></canvas><br>
-  <button class="spin-btn" id="spinBtn">SPIN</button>
-  <div class="back">
-    <a href="dashboard.html">← Back to Dashboard</a>
-  </div>
-</div>
-
-<!-- ✅ TRUSTED BOTTOM NAV -->
-<div class="bottom-nav">
-  <button onclick="location.href='dashboard.html'">🏠 Home</button>
-  <button onclick="location.href='history.html'">📜 History</button>
-  <button onclick="alert('Profile coming soon')">👤 Profile</button>
-</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -131,6 +9,7 @@ const firebaseConfig={
  projectId:"earncash7-f0ecc",
  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
+
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
@@ -142,14 +21,14 @@ const spinCost=20;
 const canvas=document.getElementById("wheel");
 const ctx=canvas.getContext("2d");
 const cx=150,cy=150,radius=140;
-let currentAngle=0;
 let userRef;
 
+/* 🎨 DRAW WHEEL */
 function drawWheel(){
  const arc=2*Math.PI/slices.length;
  ctx.clearRect(0,0,300,300);
  slices.forEach((val,i)=>{
-  const angle=i*arc+currentAngle;
+  const angle=i*arc;
   ctx.beginPath();
   ctx.fillStyle=colors[i];
   ctx.moveTo(cx,cy);
@@ -168,6 +47,7 @@ function drawWheel(){
 }
 drawWheel();
 
+/* 🔐 AUTH */
 onAuthStateChanged(auth,async user=>{
  if(!user){location.href="index.html";return;}
  userRef=doc(db,"users",user.uid);
@@ -176,6 +56,7 @@ onAuthStateChanged(auth,async user=>{
  winning.innerText=snap.data().totalEarned;
 });
 
+/* 🎰 PERFECT SPIN LOGIC (ARROW MATCH FIX) */
 spinBtn.onclick=async()=>{
  const snap=await getDoc(userRef);
  if(snap.data().balance < spinCost){
@@ -183,15 +64,18 @@ spinBtn.onclick=async()=>{
   return;
  }
 
- const arc=360/slices.length;
- const index=Math.floor(Math.random()*slices.length);
- const reward=slices[index];
-
- const rotateTo=360*5 + (360 - index*arc - arc/2);
- currentAngle=(rotateTo*Math.PI/180);
+ const spins=5;
+ const randomDeg=Math.floor(Math.random()*360);
+ const rotateTo=spins*360 + randomDeg;
 
  canvas.style.transition="transform 4s ease-out";
  canvas.style.transform=`rotate(${rotateTo}deg)`;
+
+ // 🔥 POINTER IS AT TOP (270deg)
+ const sliceDeg=360/slices.length;
+ const fixedDeg=(360-(randomDeg+270)%360)%360;
+ const index=Math.floor(fixedDeg/sliceDeg);
+ const reward=slices[index];
 
  await updateDoc(userRef,{
   balance:increment(-spinCost + reward),
@@ -209,6 +93,3 @@ spinBtn.onclick=async()=>{
 window.deposit=()=>location.href="deposit.html";
 window.withdraw=()=>location.href="withdraw.html";
 </script>
-
-</body>
-</html>
