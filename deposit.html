@@ -1,80 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Deposit – RozanaCash</title>
+<meta charset="UTF-8">
+<title>RozanaCash – Deposit</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{font-family:Arial;background:#f3f3f3;margin:0}
-.header{background:#5e239d;color:#fff;text-align:center;padding:15px}
-.box{
- background:#fff;
- margin:20px;
- padding:20px;
- border-radius:12px;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f3f3f3;
 }
-input,button{
- width:100%;
- padding:12px;
- margin-top:10px;
- font-size:16px;
+.header{
+  background:#5e239d;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+  font-size:20px;
 }
-button{
- background:#5e239d;
- color:#fff;
- border:none;
- border-radius:6px;
+.wallet{
+  background:#5e239d;
+  color:#fff;
+  margin:15px;
+  border-radius:15px;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+.pack-box{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+.pack{
+  background:#dddaf5;
+  border-radius:15px;
+  padding:15px;
+  text-align:center;
+  cursor:pointer;
+}
+.pack.active{
+  background:#5e239d;
+  color:#fff;
+}
+.add-btn{
+  margin:20px;
+  background:#5e239d;
+  color:#fff;
+  border:none;
+  width:calc(100% - 40px);
+  padding:15px;
+  border-radius:30px;
+  font-size:18px;
 }
 </style>
 </head>
+
 <body>
 
-<div class="header">Deposit Coins</div>
+<div class="header">RozanaCash</div>
 
-<div class="box">
- <p>UPI ID: <b>yourupi@paytm</b></p>
- <p>Pay and enter amount</p>
-
- <input type="number" id="amount" placeholder="Enter amount">
- <button onclick="submitDeposit()">Submit</button>
+<div class="wallet">
+  <div>Wallet ₹<span id="wallet">0</span></div>
+  <div>Winning ₹<span id="winning">0</span></div>
 </div>
 
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {getFirestore,doc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<div class="pack-box">
+  <div class="pack" onclick="selectPack(5,100,this)">Spin 5<br><b>₹100</b></div>
+  <div class="pack" onclick="selectPack(10,199,this)">Spin 10<br><b>₹199</b></div>
+  <div class="pack" onclick="selectPack(15,298,this)">Spin 15<br><b>₹298</b></div>
+  <div class="pack" onclick="selectPack(20,400,this)">Spin 20<br><b>₹400</b></div>
+  <div class="pack" onclick="selectPack(25,498,this)">Spin 25<br><b>₹498</b></div>
+  <div class="pack" onclick="selectPack(30,599,this)">Spin 30<br><b>₹599</b></div>
+</div>
 
-const firebaseConfig={
- apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
- authDomain:"earncash7-f0ecc.firebaseapp.com",
- projectId:"earncash7-f0ecc",
- appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+<button class="add-btn" onclick="addMoney()">Add Money</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore,doc,getDoc,addDoc,collection,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain:"earncash7-f0ecc.firebaseapp.com",
+  projectId:"earncash7-f0ecc",
+  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let uid;
+let selected = null;
+let userRef, uid;
 
-onAuthStateChanged(auth,user=>{
- if(!user) location.href="index.html";
- uid=user.uid;
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){ location.href="index.html"; return; }
+  uid = user.uid;
+  userRef = doc(db,"users",uid);
+  const snap = await getDoc(userRef);
+  wallet.innerText = snap.data().balance;
+  winning.innerText = snap.data().totalEarned;
 });
 
-window.submitDeposit=async()=>{
- const amt=parseInt(amount.value);
- if(amt<100){alert("Minimum ₹100");return;}
+window.selectPack = (spins,amount,el)=>{
+  document.querySelectorAll('.pack').forEach(p=>p.classList.remove("active"));
+  el.classList.add("active");
+  selected = { spins, amount };
+};
 
- await setDoc(doc(db,"deposits",Date.now().toString()),{
-  uid,
-  amount:amt,
-  status:"pending",
-  time:serverTimestamp()
- });
+window.addMoney = async()=>{
+  if(!selected){ alert("Select a pack"); return; }
 
- alert("Deposit submitted. Admin will approve.");
+  // 🔔 Fake UPI open (demo)
+  alert("Pay ₹"+selected.amount+" via UPI");
+
+  await addDoc(collection(db,"depositRequests"),{
+    uid,
+    spins:selected.spins,
+    amount:selected.amount,
+    status:"pending",
+    createdAt:serverTimestamp()
+  });
+
+  alert("Payment submitted. Spins added after admin approval.");
 };
 </script>
-
 </body>
 </html>
