@@ -2,186 +2,233 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel – RozanaCash</title>
+<title>Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#f4f6f8;
 }
-.header{
+header{
   background:#5e239d;
   color:#fff;
-  padding:14px;
+  padding:15px;
   text-align:center;
   font-size:20px;
 }
-.sub{
-  text-align:center;
-  font-size:14px;
-  color:#555;
-  margin:10px 0;
-}
-.admin-stats{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:12px;
-  margin:15px;
-}
-.stat-card{
-  background:#e9f7ef;
-  border-left:6px solid #27ae60;
-  padding:12px;
-  font-weight:bold;
-  border-radius:8px;
-  color:#1e8449;
-}
-.section{
-  background:#fff;
-  margin:15px;
+.container{
   padding:15px;
-  border-radius:12px;
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+  font-weight:bold;
+}
+.green{color:#2e7d32;}
+.red{color:#c62828;}
+.purple{color:#5e239d;}
+
+.section{
+  margin-top:25px;
+  background:#fff;
+  border-radius:10px;
+  padding:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
 }
 .req{
   border-bottom:1px solid #eee;
   padding:10px 0;
 }
-.req:last-child{border:none}
-.btn{
-  padding:6px 14px;
+button{
+  padding:8px 14px;
   border:none;
   border-radius:6px;
-  cursor:pointer;
-  margin-right:6px;
-}
-.approve{background:#6f2dbd;color:#fff}
-.reject{background:#e74c3c;color:#fff}
-.logout{
-  background:#e53935;
   color:#fff;
-  border:none;
-  width:90%;
-  margin:20px auto;
-  display:block;
-  padding:12px;
-  border-radius:10px;
-  font-size:16px;
+  cursor:pointer;
+  margin-right:5px;
+}
+.approve{background:#5e239d;}
+.reject{background:#e53935;}
+.logout{
+  width:100%;
+  margin-top:25px;
+  background:#e53935;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🔐 Admin Panel</div>
-<div class="sub">Admin-only secure control panel</div>
+<header>🔐 Admin Control Panel</header>
 
-<div class="admin-stats">
-  <div class="stat-card">✔️ Withdraw Approve / Reject</div>
-  <div class="stat-card">✔️ Wallet Auto Update</div>
-  <div class="stat-card">✔️ 100% Firebase Secure</div>
-  <div class="stat-card">✔️ GitHub Pages Compatible</div>
+<div class="container">
+
+<!-- 🔝 TOP DASHBOARD CARDS -->
+<div class="cards">
+  <div class="card purple">👥 Total Users<br><span id="totalUsers">0</span></div>
+  <div class="card green">💰 Total Deposits<br>₹<span id="totalDeposits">0</span></div>
+  <div class="card red">⏳ Pending Deposits<br><span id="pendingDeposits">0</span></div>
+  <div class="card purple">🏧 Withdraw Requests<br><span id="pendingWithdraw">0</span></div>
 </div>
 
+<!-- 📊 DAILY PROFIT -->
+<div class="section">
+  <h3>📊 Daily Profit Report</h3>
+  <p>Deposits Today: ₹<span id="todayDeposit">0</span></p>
+  <p>Withdraw Today: ₹<span id="todayWithdraw">0</span></p>
+  <p class="green"><b>Profit: ₹<span id="todayProfit">0</span></b></p>
+</div>
+
+<!-- 💰 DEPOSIT REQUESTS -->
 <div class="section">
   <h3>💰 Deposit Requests</h3>
-  <div id="depositList">Loading...</div>
+  <div id="depositList"></div>
 </div>
 
+<!-- 🏧 WITHDRAW REQUESTS -->
 <div class="section">
   <h3>🏧 Withdraw Requests</h3>
-  <div id="withdrawList">Loading...</div>
+  <div id="withdrawList"></div>
 </div>
 
-<button class="logout" id="logoutBtn">Logout</button>
+<button class="logout" onclick="logout()">Logout</button>
+
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getFirestore, collection, getDocs, doc, updateDoc, increment 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain: "earncash7-f0ecc.firebaseapp.com",
-  projectId: "earncash7-f0ecc",
-  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+const firebaseConfig={
+  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain:"earncash7-f0ecc.firebaseapp.com",
+  projectId:"earncash7-f0ecc",
+  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
+const today=new Date().toDateString();
+
+onAuthStateChanged(auth,async user=>{
   if(!user){location.href="index.html";return;}
-  const uref = doc(db,"users",user.uid);
-  const snap = await getDoc(uref);
-  if(!snap.exists() || snap.data().role!=="admin"){
+
+  const userSnap=await getDocs(collection(db,"users"));
+  const me=[...userSnap.docs].find(d=>d.id===user.uid);
+  if(!me || me.data().role!=="admin"){
     alert("Access denied");
-    location.href="dashboard.html";
+    location.href="spin.html";
+    return;
   }
-  loadDeposits();
-  loadWithdraws();
+
+  loadDashboard();
 });
 
-async function loadDeposits(){
-  const list = document.getElementById("depositList");
-  list.innerHTML="";
-  const q = await getDocs(collection(db,"depositRequests"));
-  if(q.empty){list.innerHTML="No requests";return;}
-  q.forEach(d=>{
-    const r=d.data();
-    list.innerHTML+=`
+async function loadDashboard(){
+  // USERS
+  const users=await getDocs(collection(db,"users"));
+  document.getElementById("totalUsers").innerText=users.size;
+
+  // DEPOSITS
+  let totalDep=0,pendingDep=0,todayDep=0;
+  const deposits=await getDocs(collection(db,"deposits"));
+  deposits.forEach(d=>{
+    const x=d.data();
+    if(x.status==="approved") totalDep+=x.amount;
+    if(x.status==="pending") pendingDep++;
+    if(x.status==="approved" && new Date(x.createdAt).toDateString()===today)
+      todayDep+=x.amount;
+  });
+
+  document.getElementById("totalDeposits").innerText=totalDep;
+  document.getElementById("pendingDeposits").innerText=pendingDep;
+  document.getElementById("todayDeposit").innerText=todayDep;
+
+  // WITHDRAW
+  let pendingW=0,todayW=0;
+  const withdraws=await getDocs(collection(db,"withdrawRequests"));
+  withdraws.forEach(d=>{
+    const x=d.data();
+    if(x.status==="pending") pendingW++;
+    if(x.status==="approved" && new Date(x.createdAt).toDateString()===today)
+      todayW+=x.amount;
+  });
+
+  document.getElementById("pendingWithdraw").innerText=pendingW;
+  document.getElementById("todayWithdraw").innerText=todayW;
+  document.getElementById("todayProfit").innerText=todayDep-todayW;
+
+  renderDeposits(deposits);
+  renderWithdraws(withdraws);
+}
+
+function renderDeposits(snapshot){
+  const box=document.getElementById("depositList");
+  box.innerHTML="";
+  snapshot.forEach(d=>{
+    const x=d.data();
+    if(x.status!=="pending") return;
+    box.innerHTML+=`
     <div class="req">
-      <b>User:</b> ${r.email}<br>
-      <b>Amount:</b> ₹${r.amount}<br><br>
-      <button class="btn approve" onclick="approveDeposit('${d.id}','${r.uid}',${r.amount})">Approve</button>
-      <button class="btn reject" onclick="rejectDeposit('${d.id}')">Reject</button>
+      User: ${x.uid}<br>
+      Amount: ₹${x.amount}<br>
+      <button class="approve" onclick="approveDeposit('${d.id}','${x.uid}',${x.amount})">Approve</button>
+      <button class="reject" onclick="rejectDeposit('${d.id}')">Reject</button>
     </div>`;
   });
 }
 
-async function loadWithdraws(){
-  const list = document.getElementById("withdrawList");
-  list.innerHTML="";
-  const q = await getDocs(collection(db,"withdrawRequests"));
-  if(q.empty){list.innerHTML="No requests";return;}
-  q.forEach(d=>{
-    const r=d.data();
-    list.innerHTML+=`
-    <div class="req">
-      <b>User:</b> ${r.email}<br>
-      <b>Amount:</b> ₹${r.amount}<br><br>
-      <button class="btn approve" onclick="approveWithdraw('${d.id}')">Approve</button>
-      <button class="btn reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
-    </div>`;
-  });
-}
-
-window.approveDeposit = async(id,uid,amt)=>{
+window.approveDeposit=async(id,uid,amt)=>{
+  await updateDoc(doc(db,"deposits",id),{status:"approved"});
   await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
-  await deleteDoc(doc(db,"depositRequests",id));
-  alert("Deposit approved");
-  loadDeposits();
+  location.reload();
+};
+window.rejectDeposit=async(id)=>{
+  await updateDoc(doc(db,"deposits",id),{status:"rejected"});
+  location.reload();
 };
 
-window.rejectDeposit = async(id)=>{
-  await deleteDoc(doc(db,"depositRequests",id));
-  loadDeposits();
+function renderWithdraws(snapshot){
+  const box=document.getElementById("withdrawList");
+  box.innerHTML="";
+  snapshot.forEach(d=>{
+    const x=d.data();
+    if(x.status!=="pending") return;
+    box.innerHTML+=`
+    <div class="req">
+      User: ${x.uid}<br>
+      Amount: ₹${x.amount}<br>
+      UPI: ${x.upi}<br>
+      <button class="approve" onclick="approveWithdraw('${d.id}')">Approve</button>
+      <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
+    </div>`;
+  });
+}
+
+window.approveWithdraw=async(id)=>{
+  await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
+  location.reload();
+};
+window.rejectWithdraw=async(id)=>{
+  await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
+  location.reload();
 };
 
-window.approveWithdraw = async(id)=>{
-  await deleteDoc(doc(db,"withdrawRequests",id));
-  alert("Withdraw approved");
-  loadWithdraws();
-};
-
-window.rejectWithdraw = async(id)=>{
-  await deleteDoc(doc(db,"withdrawRequests",id));
-  loadWithdraws();
-};
-
-document.getElementById("logoutBtn").onclick=()=>{
+window.logout=()=>{
   signOut(auth).then(()=>location.href="index.html");
 };
 </script>
