@@ -1,73 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EarnCash Google Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <title>Earncash Google Login</title>  
-  <meta name="viewport" content="width=device-width, initial-scale=1">    <style>  
-    body {  
-      margin: 0;  
-      height: 100vh;  
-      display: flex;  
-      justify-content: center;  
-      align-items: center;  
-      background: #f2f2f2;  
-      font-family: Arial, sans-serif;  
-    }  
-    button {  
-      padding: 14px 24px;  
-      font-size: 16px;  
-      border: none;  
-      border-radius: 6px;  
-      background: #4285F4;  
-      color: white;  
-      cursor: pointer;  
-    }  
-    button:hover {  
-      background: #357ae8;  
-    }  
-  </style>  </head>  
-<body>  <button id="googleBtn">Sign in with Google</button>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f2;
+      font-family: Arial, sans-serif;
+    }
 
-  <script type="module">  
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
-    import {   
-      getAuth,   
-      GoogleAuthProvider,   
-      signInWithPopup   
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";  
-  
-    // 🔥 YOUR REAL FIREBASE CONFIG  
-    const firebaseConfig = {  
-      apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",  
-      authDomain: "earncash7-f0ecc.firebaseapp.com",  
-      projectId: "earncash7-f0ecc",  
-      appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"  
-    };  
-  
-    // Initialize Firebase  
-    const app = initializeApp(firebaseConfig);  
-    const auth = getAuth(app);  
-    const provider = new GoogleAuthProvider();  
-  
-    // Button click  
-    document.getElementById("googleBtn").addEventListener("click", () => {  
-      signInWithPopup(auth, provider)  
-        .then((result) => {  
-          const user = result.user;  
-  
-          alert(  
-            "LOGIN SUCCESSFUL ✅\n\n" +  
-            "Name: " + user.displayName + "\n" +  
-            "Email: " + user.email + "\n" +  
-            "UID: " + user.uid  
-          );  
-  
-          console.log("User Data:", user);  
-        })  
-        .catch((error) => {  
-          alert("LOGIN ERROR ❌\n\n" + error.message);  
-          console.error(error);  
-        });  
-    });  
-  </script>  </body>  
+    button {
+      padding: 16px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      background: #4285F4;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #357ae8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="googleBtn">Sign in with Google</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // 🔥 FIREBASE CONFIG (tumhara real)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+      authDomain: "earncash7-f0ecc.firebaseapp.com",
+      projectId: "earncash7-f0ecc",
+      appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Button click
+    document.getElementById("googleBtn").addEventListener("click", () => {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // ✅ LOGIN SUCCESS
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("Login Error ❌\n\n" + error.message);
+        });
+    });
+  </script>
+
+</body>
 </html>
