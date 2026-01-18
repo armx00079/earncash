@@ -1,190 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>RozanaCash - Spin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>RozanaCash – Spin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:#f4f4f4;
-      text-align:center;
-    }
-    header{
-      background:#5a189a;
-      color:white;
-      padding:15px;
-      font-size:20px;
-    }
-    .card{
-      background:white;
-      margin:20px auto;
-      padding:15px;
-      width:90%;
-      max-width:400px;
-      border-radius:12px;
-      box-shadow:0 4px 10px rgba(0,0,0,0.15);
-    }
-    .row{
-      display:flex;
-      justify-content:space-between;
-      font-size:18px;
-      font-weight:bold;
-    }
-    .wheel{
-      margin:30px auto;
-      width:260px;
-      height:260px;
-      border-radius:50%;
-      background:conic-gradient(
-        #7b2cbf 0deg 45deg,
-        #9d4edd 45deg 90deg,
-        #7b2cbf 90deg 135deg,
-        #9d4edd 135deg 180deg,
-        #7b2cbf 180deg 225deg,
-        #9d4edd 225deg 270deg,
-        #7b2cbf 270deg 315deg,
-        #9d4edd 315deg 360deg
-      );
-      transition:transform 4s ease-out;
-    }
-    .pointer{
-      width:0;
-      height:0;
-      border-left:15px solid transparent;
-      border-right:15px solid transparent;
-      border-bottom:25px solid red;
-      margin:auto;
-    }
-    button{
-      margin-top:20px;
-      padding:12px 40px;
-      font-size:18px;
-      border:none;
-      border-radius:25px;
-      background:#7b2cbf;
-      color:white;
-      cursor:pointer;
-    }
-    a{
-      display:block;
-      margin-top:15px;
-      color:#5a189a;
-      text-decoration:none;
-      font-weight:bold;
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f3f3f3;
+}
+.header{
+  background:#5e239d;
+  color:white;
+  text-align:center;
+  padding:14px;
+  font-size:20px;
+}
+.card{
+  background:#5e239d;
+  color:white;
+  margin:15px;
+  border-radius:15px;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card button{
+  background:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+}
+.wheel-box{
+  text-align:center;
+  margin-top:20px;
+}
+.wheel{
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:conic-gradient(
+    #6a1bb1 0deg 45deg,
+    #7b2cbf 45deg 90deg,
+    #8e44ad 90deg 135deg,
+    #9b59b6 135deg 180deg,
+    #6a1bb1 180deg 225deg,
+    #7b2cbf 225deg 270deg,
+    #8e44ad 270deg 315deg,
+    #9b59b6 315deg 360deg
+  );
+  margin:auto;
+  position:relative;
+  transition:transform 3s ease-out;
+}
+.pointer{
+  width:0;
+  height:0;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-bottom:25px solid red;
+  margin:auto;
+}
+.spin-btn{
+  margin-top:20px;
+  background:#ffcc00;
+  border:none;
+  padding:14px 40px;
+  border-radius:30px;
+  font-size:18px;
+  cursor:pointer;
+}
+.back{
+  margin-top:15px;
+}
+.back a{
+  text-decoration:none;
+  color:#5e239d;
+}
+</style>
 </head>
 
 <body>
 
-<header>RozanaCash</header>
+<div class="header">RozanaCash</div>
 
 <div class="card">
-  <div class="row">
-    <div>Wallet ₹<span id="wallet">0</span></div>
-    <div>Winning ₹<span id="winning">0</span></div>
+  <div>
+    Wallet ₹<span id="wallet">0</span>
+    <br>
+    <button onclick="openDeposit()">More Spin</button>
+  </div>
+  <div>
+    Winning ₹<span id="winning">0</span>
+    <br>
+    <button onclick="withdraw()">Withdraw</button>
   </div>
 </div>
 
-<div class="pointer"></div>
-<div class="wheel" id="wheel"></div>
+<div class="wheel-box">
+  <div class="pointer"></div>
+  <div class="wheel" id="wheel"></div>
 
-<button id="spinBtn">SPIN</button>
-<a href="dashboard.html">← Back to Dashboard</a>
+  <button class="spin-btn" id="spinBtn">SPIN</button>
+
+  <div class="back">
+    <a href="dashboard.html">← Back to Dashboard</a>
+  </div>
+</div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc,
-    increment
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-    authDomain: "earncash7-f0ecc.firebaseapp.com",
-    projectId: "earncash7-f0ecc",
-    appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain: "earncash7-f0ecc.firebaseapp.com",
+  projectId: "earncash7-f0ecc",
+  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  const spinCost = 20;
-  const wheel = document.getElementById("wheel");
-  const spinBtn = document.getElementById("spinBtn");
+const spinCost = 20;
 
-  let userRef;
+// ADMIN CONTROL
+const rewards = [
+  { value: 0, weight: 40 },
+  { value: 10, weight: 30 },
+  { value: 20, weight: 20 },
+  { value: 40, weight: 7 },
+  { value: 60, weight: 3 }
+];
 
-  // 🔥 ADMIN CONTROLLED REWARDS
-  const rewards = [
-    { value: 0, weight: 40 },
-    { value: 10, weight: 30 },
-    { value: 20, weight: 20 },
-    { value: 40, weight: 7 },
-    { value: 60, weight: 3 }
-  ];
+function getReward(){
+  let bag=[];
+  rewards.forEach(r=>{
+    for(let i=0;i<r.weight;i++) bag.push(r.value);
+  });
+  return bag[Math.floor(Math.random()*bag.length)];
+}
 
-  function getReward(){
-    let bag = [];
-    rewards.forEach(r=>{
-      for(let i=0;i<r.weight;i++) bag.push(r.value);
-    });
-    return bag[Math.floor(Math.random()*bag.length)];
+let userRef;
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    window.location.href="index.html";
+    return;
+  }
+  userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+  document.getElementById("wallet").innerText = snap.data().balance;
+  document.getElementById("winning").innerText = snap.data().totalEarned;
+});
+
+spinBtn.onclick = async()=>{
+  const snap = await getDoc(userRef);
+  const balance = snap.data().balance;
+
+  if(balance < spinCost){
+    alert("❌ Minimum 20 coins required");
+    return;
   }
 
-  onAuthStateChanged(auth, async(user)=>{
-    if(!user){
-      window.location.href = "index.html";
-      return;
-    }
+  const reward = getReward();
+  const angle = Math.floor(Math.random()*360) + 720;
+  wheel.style.transform = `rotate(${angle}deg)`;
 
-    userRef = doc(db,"users",user.uid);
-    const snap = await getDoc(userRef);
-
-    document.getElementById("wallet").innerText = snap.data().balance;
-    document.getElementById("winning").innerText = snap.data().totalEarned;
+  await updateDoc(userRef,{
+    balance: increment(-spinCost + reward),
+    totalEarned: increment(reward)
   });
 
-  spinBtn.onclick = async()=>{
-    const snap = await getDoc(userRef);
-    const balance = snap.data().balance;
+  setTimeout(async()=>{
+    const s = await getDoc(userRef);
+    wallet.innerText = s.data().balance;
+    winning.innerText = s.data().totalEarned;
+    alert("🎉 You won ₹"+reward);
+  },3000);
+};
 
-    if(balance < spinCost){
-      alert("❌ Minimum 20 coins required");
-      return;
-    }
+window.openDeposit = ()=>{
+  alert("💰 Deposit system (UPI) next step");
+};
 
-    spinBtn.disabled = true;
-
-    const reward = getReward();
-    const rotation = 360 * 5 + Math.floor(Math.random() * 360);
-    wheel.style.transform = `rotate(${rotation}deg)`;
-
-    setTimeout(async()=>{
-      await updateDoc(userRef,{
-        balance: increment(-spinCost + reward),
-        totalEarned: increment(reward)
-      });
-
-      const updated = await getDoc(userRef);
-      document.getElementById("wallet").innerText = updated.data().balance;
-      document.getElementById("winning").innerText = updated.data().totalEarned;
-
-      alert(`🎉 You won ₹${reward}`);
-      spinBtn.disabled = false;
-    },4000);
-  };
+window.withdraw = ()=>{
+  const win = parseInt(winning.innerText);
+  if(win < 500){
+    alert("❌ Minimum withdrawal ₹500");
+  }else{
+    alert("✅ Withdraw request submitted");
+  }
+};
 </script>
 
 </body>
