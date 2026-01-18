@@ -61,6 +61,15 @@
       background: #4a1c7a;
     }
 
+    .withdraw {
+      background: #673ab7;
+      color: white;
+    }
+
+    .withdraw:hover {
+      background: #512da8;
+    }
+
     .logout {
       background: #e53935;
       color: white;
@@ -84,9 +93,14 @@
     Balance: <span id="balance">0</span> Coins
   </div>
 
-  <!-- 🔥 ENTER APP BUTTON -->
+  <!-- 🚀 ENTER APP -->
   <button class="btn enter" id="enterAppBtn">
     Enter App 🚀
+  </button>
+
+  <!-- 💸 WITHDRAW -->
+  <button class="btn withdraw" id="withdrawBtn">
+    Withdraw 💰
   </button>
 
   <!-- 🚪 LOGOUT -->
@@ -128,7 +142,6 @@
   // 🔐 AUTH + WALLET LOGIC
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      // ❌ Not logged in
       window.location.href = "index.html";
       return;
     }
@@ -137,7 +150,6 @@
     const snap = await getDoc(userRef);
 
     if (!snap.exists()) {
-      // 🆕 New user
       await setDoc(userRef, {
         name: user.displayName,
         email: user.email,
@@ -145,12 +157,9 @@
         totalEarned: 10,
         createdAt: new Date()
       });
-
       document.getElementById("balance").innerText = "10";
     } else {
-      // 👤 Existing user
-      document.getElementById("balance").innerText =
-        snap.data().balance;
+      document.getElementById("balance").innerText = snap.data().balance;
     }
 
     document.getElementById("name").innerText =
@@ -162,6 +171,11 @@
   // 🚀 ENTER APP
   document.getElementById("enterAppBtn").onclick = () => {
     window.location.href = "spin.html";
+  };
+
+  // 💸 WITHDRAW
+  document.getElementById("withdrawBtn").onclick = () => {
+    window.location.href = "withdraw.html";
   };
 
   // 🚪 LOGOUT
