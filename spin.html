@@ -36,13 +36,6 @@ body{
   font-weight:bold;
 }
 .wheel-box{text-align:center;margin-top:20px}
-.pointer{
-  width:0;height:0;
-  border-left:15px solid transparent;
-  border-right:15px solid transparent;
-  border-bottom:25px solid red;
-  margin:auto;
-}
 canvas{margin-top:10px}
 .spin-btn{
   margin-top:20px;
@@ -71,6 +64,29 @@ canvas{margin-top:10px}
   border-radius:25px;
   font-weight:bold;
 }
+
+/* 🎉 RESULT POPUP */
+#resultPopup{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);
+  z-index:999;
+  justify-content:center;
+  align-items:center;
+}
+#resultBox{
+  background:white;
+  padding:30px;
+  border-radius:18px;
+  text-align:center;
+  width:260px;
+  animation:pop 0.4s ease-out;
+}
+@keyframes pop{
+  from{transform:scale(0.5);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
 </style>
 </head>
 
@@ -90,7 +106,6 @@ canvas{margin-top:10px}
 </div>
 
 <div class="wheel-box">
-  <div class="pointer"></div>
   <canvas id="wheel" width="300" height="300"></canvas><br>
   <button class="spin-btn" id="spinBtn">SPIN</button>
   <div class="back">
@@ -102,6 +117,14 @@ canvas{margin-top:10px}
   <button onclick="location.href='dashboard.html'">🏠 Home</button>
   <button onclick="location.href='history.html'">📜 History</button>
   <button onclick="alert('Profile coming soon')">👤 Profile</button>
+</div>
+
+<!-- 🎉 RESULT POPUP -->
+<div id="resultPopup">
+  <div id="resultBox">
+    <h2 id="resultAmount" style="color:#5e239d;margin:0">₹0</h2>
+    <p style="margin-top:10px;font-weight:bold">Spin Result</p>
+  </div>
 </div>
 
 <script type="module">
@@ -126,14 +149,13 @@ const spinCost=20;
 const canvas=document.getElementById("wheel");
 const ctx=canvas.getContext("2d");
 const cx=150,cy=150,radius=140;
-let currentAngle=0;
 let userRef;
 
 function drawWheel(){
  const arc=2*Math.PI/slices.length;
  ctx.clearRect(0,0,300,300);
  slices.forEach((val,i)=>{
-  const angle=i*arc+currentAngle;
+  const angle=i*arc;
   ctx.beginPath();
   ctx.fillStyle=colors[i];
   ctx.moveTo(cx,cy);
@@ -160,7 +182,6 @@ onAuthStateChanged(auth,async user=>{
  winning.innerText=snap.data().totalEarned;
 });
 
-/* ✅ FIXED SPIN LOGIC */
 spinBtn.onclick=async()=>{
  const snap=await getDoc(userRef);
  if(snap.data().balance < spinCost){
@@ -189,7 +210,15 @@ spinBtn.onclick=async()=>{
   const s=await getDoc(userRef);
   wallet.innerText=s.data().balance;
   winning.innerText=s.data().totalEarned;
-  alert("🎯 Result: ₹"+reward);
+
+  // 🎉 SHOW RESULT POPUP
+  document.getElementById("resultAmount").innerText="₹"+reward;
+  document.getElementById("resultPopup").style.display="flex";
+
+  setTimeout(()=>{
+    document.getElementById("resultPopup").style.display="none";
+  },2000);
+
  },4000);
 };
 
