@@ -53,22 +53,25 @@ body{
   width:280px;
   height:280px;
   margin:auto;
-}
-.wheel{
-  width:280px;
-  height:280px;
+} .wheel{
+  width:260px;
+  height:260px;
   border-radius:50%;
   background:conic-gradient(
-    #4b148b 0deg 45deg,
-    #6a1bb1 45deg 90deg,
-    #7b2cbf 90deg 135deg,
-    #8e44ad 135deg 180deg,
-    #4b148b 180deg 225deg,
-    #6a1bb1 225deg 270deg,
-    #7b2cbf 270deg 315deg,
-    #8e44ad 315deg 360deg
+    #5b189a 0deg 40deg,     /* 200 */
+    #6a1bb1 40deg 80deg,   /* 150 */
+    #7b2cbf 80deg 120deg,  /* 130 */
+    #8e44ad 120deg 160deg, /* 100 */
+    #9b59b6 160deg 200deg, /* 60 */
+    #8e44ad 200deg 240deg, /* 40 */
+    #7b2cbf 240deg 280deg, /* 20 */
+    #6a1bb1 280deg 320deg, /* -20 */
+    #5b189a 320deg 360deg  /* -60 */
   );
+  margin:auto;
+  position:relative;
   transition:transform 3s ease-out;
+}
 }
 .label{
   position:absolute;
