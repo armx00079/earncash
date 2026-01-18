@@ -2,68 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin Panel – RozanaCash</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:#f2f2f2;
+  font-family:Arial;
+  background:#f4f6f8;
 }
 .header{
   background:#5e239d;
-  color:white;
+  color:#fff;
+  padding:14px;
   text-align:center;
-  padding:15px;
   font-size:20px;
 }
-.container{
-  padding:15px;
+.sub{
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  margin:10px 0;
 }
-.card{
-  background:white;
-  border-radius:10px;
-  padding:15px;
-  margin-bottom:15px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+.admin-stats{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  margin:15px;
 }
+.stat-card{
+  background:#e9f7ef;
+  border-left:6px solid #27ae60;
+  padding:12px;
+  font-weight:bold;
+  border-radius:8px;
+  color:#1e8449;
+}
+.section{
+  background:#fff;
+  margin:15px;
+  padding:15px;
+  border-radius:12px;
+}
+.req{
+  border-bottom:1px solid #eee;
+  padding:10px 0;
+}
+.req:last-child{border:none}
 .btn{
-  padding:8px 14px;
+  padding:6px 14px;
   border:none;
   border-radius:6px;
   cursor:pointer;
-  color:white;
+  margin-right:6px;
 }
-.approve{ background:#4caf50; }
-.reject{ background:#e53935; }
-.logout{ background:#e53935; width:100%; margin-top:20px; }
-.small{ font-size:14px; color:#555; }
+.approve{background:#6f2dbd;color:#fff}
+.reject{background:#e74c3c;color:#fff}
+.logout{
+  background:#e53935;
+  color:#fff;
+  border:none;
+  width:90%;
+  margin:20px auto;
+  display:block;
+  padding:12px;
+  border-radius:10px;
+  font-size:16px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">🔐 Admin Panel</div>
+<div class="sub">Admin-only secure control panel</div>
 
-<div class="container">
-
-  <h3>💰 Deposit Requests</h3>
-  <div id="depositList"></div>
-
-  <h3>🏧 Withdraw Requests</h3>
-  <div id="withdrawList"></div>
-
-  <button class="btn logout" id="logoutBtn">Logout</button>
+<div class="admin-stats">
+  <div class="stat-card">✔️ Withdraw Approve / Reject</div>
+  <div class="stat-card">✔️ Wallet Auto Update</div>
+  <div class="stat-card">✔️ 100% Firebase Secure</div>
+  <div class="stat-card">✔️ GitHub Pages Compatible</div>
 </div>
+
+<div class="section">
+  <h3>💰 Deposit Requests</h3>
+  <div id="depositList">Loading...</div>
+</div>
+
+<div class="section">
+  <h3>🏧 Withdraw Requests</h3>
+  <div id="withdrawList">Loading...</div>
+</div>
+
+<button class="logout" id="logoutBtn">Logout</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getFirestore, collection, getDocs,
-  doc, getDoc, updateDoc, increment
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
@@ -76,39 +112,28 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔐 ADMIN SECURITY */
 onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    location.href="index.html";
-    return;
-  }
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-
-  if(!snap.exists() || snap.data().role !== "admin"){
-    alert("❌ Access Denied");
+  if(!user){location.href="index.html";return;}
+  const uref = doc(db,"users",user.uid);
+  const snap = await getDoc(uref);
+  if(!snap.exists() || snap.data().role!=="admin"){
+    alert("Access denied");
     location.href="dashboard.html";
-    return;
   }
-
   loadDeposits();
   loadWithdraws();
 });
 
-/* 💰 LOAD DEPOSITS */
 async function loadDeposits(){
   const list = document.getElementById("depositList");
-  list.innerHTML = "";
-
+  list.innerHTML="";
   const q = await getDocs(collection(db,"depositRequests"));
+  if(q.empty){list.innerHTML="No requests";return;}
   q.forEach(d=>{
-    const r = d.data();
-    if(r.status !== "pending") return;
-
-    list.innerHTML += `
-    <div class="card">
-      <b>User:</b> ${r.name}<br>
-      <span class="small">${r.email}</span><br>
+    const r=d.data();
+    list.innerHTML+=`
+    <div class="req">
+      <b>User:</b> ${r.email}<br>
       <b>Amount:</b> ₹${r.amount}<br><br>
       <button class="btn approve" onclick="approveDeposit('${d.id}','${r.uid}',${r.amount})">Approve</button>
       <button class="btn reject" onclick="rejectDeposit('${d.id}')">Reject</button>
@@ -116,42 +141,16 @@ async function loadDeposits(){
   });
 }
 
-/* ✔️ APPROVE DEPOSIT */
-window.approveDeposit = async(id, uid, amount)=>{
-  const userRef = doc(db,"users",uid);
-  await updateDoc(userRef,{
-    balance: increment(amount)
-  });
-  await updateDoc(doc(db,"depositRequests",id),{
-    status:"approved"
-  });
-  alert("✅ Deposit Approved");
-  loadDeposits();
-};
-
-/* ❌ REJECT DEPOSIT */
-window.rejectDeposit = async(id)=>{
-  await updateDoc(doc(db,"depositRequests",id),{
-    status:"rejected"
-  });
-  alert("❌ Deposit Rejected");
-  loadDeposits();
-};
-
-/* 🏧 LOAD WITHDRAW REQUESTS */
 async function loadWithdraws(){
   const list = document.getElementById("withdrawList");
-  list.innerHTML = "";
-
+  list.innerHTML="";
   const q = await getDocs(collection(db,"withdrawRequests"));
+  if(q.empty){list.innerHTML="No requests";return;}
   q.forEach(d=>{
-    const r = d.data();
-    if(r.status !== "pending") return;
-
-    list.innerHTML += `
-    <div class="card">
-      <b>User:</b> ${r.name}<br>
-      <span class="small">${r.upi}</span><br>
+    const r=d.data();
+    list.innerHTML+=`
+    <div class="req">
+      <b>User:</b> ${r.email}<br>
       <b>Amount:</b> ₹${r.amount}<br><br>
       <button class="btn approve" onclick="approveWithdraw('${d.id}')">Approve</button>
       <button class="btn reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
@@ -159,29 +158,31 @@ async function loadWithdraws(){
   });
 }
 
-/* ✔️ APPROVE WITHDRAW */
+window.approveDeposit = async(id,uid,amt)=>{
+  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
+  await deleteDoc(doc(db,"depositRequests",id));
+  alert("Deposit approved");
+  loadDeposits();
+};
+
+window.rejectDeposit = async(id)=>{
+  await deleteDoc(doc(db,"depositRequests",id));
+  loadDeposits();
+};
+
 window.approveWithdraw = async(id)=>{
-  await updateDoc(doc(db,"withdrawRequests",id),{
-    status:"approved"
-  });
-  alert("✅ Withdraw Approved");
+  await deleteDoc(doc(db,"withdrawRequests",id));
+  alert("Withdraw approved");
   loadWithdraws();
 };
 
-/* ❌ REJECT WITHDRAW */
 window.rejectWithdraw = async(id)=>{
-  await updateDoc(doc(db,"withdrawRequests",id),{
-    status:"rejected"
-  });
-  alert("❌ Withdraw Rejected");
+  await deleteDoc(doc(db,"withdrawRequests",id));
   loadWithdraws();
 };
 
-/* 🚪 LOGOUT */
-document.getElementById("logoutBtn").onclick = ()=>{
-  signOut(auth).then(()=>{
-    location.href="index.html";
-  });
+document.getElementById("logoutBtn").onclick=()=>{
+  signOut(auth).then(()=>location.href="index.html");
 };
 </script>
 
