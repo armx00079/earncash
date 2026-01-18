@@ -6,63 +6,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f6f8;
-}
-header{
-  background:#5e239d;
-  color:#fff;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-}
-.container{
-  padding:15px;
-}
-.cards{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-}
-.card{
-  background:#fff;
-  border-radius:10px;
-  padding:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,.1);
-  font-weight:bold;
-}
-.green{color:#2e7d32;}
-.red{color:#c62828;}
-.purple{color:#5e239d;}
-
-.section{
-  margin-top:25px;
-  background:#fff;
-  border-radius:10px;
-  padding:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,.1);
-}
-.req{
-  border-bottom:1px solid #eee;
-  padding:10px 0;
-}
-button{
-  padding:8px 14px;
-  border:none;
-  border-radius:6px;
-  color:#fff;
-  cursor:pointer;
-  margin-right:5px;
-}
-.approve{background:#5e239d;}
-.reject{background:#e53935;}
-.logout{
-  width:100%;
-  margin-top:25px;
-  background:#e53935;
-}
+body{margin:0;font-family:Arial;background:#f4f6f8}
+header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20px}
+.container{padding:15px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:#fff;border-radius:10px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,.1);font-weight:bold}
+.green{color:#2e7d32}
+.red{color:#c62828}
+.purple{color:#5e239d}
+.section{margin-top:25px;background:#fff;border-radius:10px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.req{border-bottom:1px solid #eee;padding:10px 0}
+button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;margin-right:5px}
+.approve{background:#5e239d}
+.reject{background:#e53935}
+.logout{width:100%;margin-top:25px;background:#e53935}
 </style>
 </head>
 
@@ -72,7 +29,6 @@ button{
 
 <div class="container">
 
-<!-- 🔝 TOP DASHBOARD CARDS -->
 <div class="cards">
   <div class="card purple">👥 Total Users<br><span id="totalUsers">0</span></div>
   <div class="card green">💰 Total Deposits<br>₹<span id="totalDeposits">0</span></div>
@@ -80,7 +36,6 @@ button{
   <div class="card purple">🏧 Withdraw Requests<br><span id="pendingWithdraw">0</span></div>
 </div>
 
-<!-- 📊 DAILY PROFIT -->
 <div class="section">
   <h3>📊 Daily Profit Report</h3>
   <p>Deposits Today: ₹<span id="todayDeposit">0</span></p>
@@ -88,13 +43,11 @@ button{
   <p class="green"><b>Profit: ₹<span id="todayProfit">0</span></b></p>
 </div>
 
-<!-- 💰 DEPOSIT REQUESTS -->
 <div class="section">
   <h3>💰 Deposit Requests</h3>
   <div id="depositList"></div>
 </div>
 
-<!-- 🏧 WITHDRAW REQUESTS -->
 <div class="section">
   <h3>🏧 Withdraw Requests</h3>
   <div id="withdrawList"></div>
@@ -106,131 +59,126 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-  getFirestore, collection, getDocs, doc, updateDoc, increment 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore,collection,getDocs,doc,updateDoc,increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain:"earncash7-f0ecc.firebaseapp.com",
-  projectId:"earncash7-f0ecc",
-  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+ authDomain:"earncash7-f0ecc.firebaseapp.com",
+ projectId:"earncash7-f0ecc",
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
-
 const today=new Date().toDateString();
 
 onAuthStateChanged(auth,async user=>{
-  if(!user){location.href="index.html";return;}
-
-  const userSnap=await getDocs(collection(db,"users"));
-  const me=[...userSnap.docs].find(d=>d.id===user.uid);
-  if(!me || me.data().role!=="admin"){
-    alert("Access denied");
-    location.href="spin.html";
-    return;
-  }
-
-  loadDashboard();
+ if(!user){location.href="index.html";return;}
+ const users=await getDocs(collection(db,"users"));
+ const me=[...users.docs].find(d=>d.id===user.uid);
+ if(!me || me.data().role!=="admin"){
+   alert("Access denied");
+   location.href="spin.html";
+   return;
+ }
+ loadDashboard();
 });
 
 async function loadDashboard(){
-  // USERS
-  const users=await getDocs(collection(db,"users"));
-  document.getElementById("totalUsers").innerText=users.size;
+ const users=await getDocs(collection(db,"users"));
+ document.getElementById("totalUsers").innerText=users.size;
 
-  // DEPOSITS
-  let totalDep=0,pendingDep=0,todayDep=0;
-  const deposits=await getDocs(collection(db,"deposits"));
-  deposits.forEach(d=>{
-    const x=d.data();
-    if(x.status==="approved") totalDep+=x.amount;
-    if(x.status==="pending") pendingDep++;
-    if(x.status==="approved" && new Date(x.createdAt).toDateString()===today)
-      todayDep+=x.amount;
-  });
+ let totalDep=0,pendingDep=0,todayDep=0;
+ const deposits=await getDocs(collection(db,"depositRequests"));
 
-  document.getElementById("totalDeposits").innerText=totalDep;
-  document.getElementById("pendingDeposits").innerText=pendingDep;
-  document.getElementById("todayDeposit").innerText=todayDep;
+ deposits.forEach(d=>{
+   const x=d.data();
+   if(x.status==="Approved") totalDep+=x.amount;
+   if(x.status==="Pending") pendingDep++;
+   if(x.status==="Approved" && x.createdAt?.toDate().toDateString()===today)
+     todayDep+=x.amount;
+ });
 
-  // WITHDRAW
-  let pendingW=0,todayW=0;
-  const withdraws=await getDocs(collection(db,"withdrawRequests"));
-  withdraws.forEach(d=>{
-    const x=d.data();
-    if(x.status==="pending") pendingW++;
-    if(x.status==="approved" && new Date(x.createdAt).toDateString()===today)
-      todayW+=x.amount;
-  });
+ document.getElementById("totalDeposits").innerText=totalDep;
+ document.getElementById("pendingDeposits").innerText=pendingDep;
+ document.getElementById("todayDeposit").innerText=todayDep;
 
-  document.getElementById("pendingWithdraw").innerText=pendingW;
-  document.getElementById("todayWithdraw").innerText=todayW;
-  document.getElementById("todayProfit").innerText=todayDep-todayW;
+ let pendingW=0,todayW=0;
+ const withdraws=await getDocs(collection(db,"withdrawRequests"));
 
-  renderDeposits(deposits);
-  renderWithdraws(withdraws);
+ withdraws.forEach(d=>{
+   const x=d.data();
+   if(x.status==="Pending") pendingW++;
+   if(x.status==="Approved" && x.createdAt?.toDate().toDateString()===today)
+     todayW+=x.amount;
+ });
+
+ document.getElementById("pendingWithdraw").innerText=pendingW;
+ document.getElementById("todayWithdraw").innerText=todayW;
+ document.getElementById("todayProfit").innerText=todayDep-todayW;
+
+ renderDeposits(deposits);
+ renderWithdraws(withdraws);
 }
 
 function renderDeposits(snapshot){
-  const box=document.getElementById("depositList");
-  box.innerHTML="";
-  snapshot.forEach(d=>{
-    const x=d.data();
-    if(x.status!=="pending") return;
-    box.innerHTML+=`
-    <div class="req">
-      User: ${x.uid}<br>
-      Amount: ₹${x.amount}<br>
-      <button class="approve" onclick="approveDeposit('${d.id}','${x.uid}',${x.amount})">Approve</button>
-      <button class="reject" onclick="rejectDeposit('${d.id}')">Reject</button>
-    </div>`;
-  });
+ const box=document.getElementById("depositList");
+ box.innerHTML="";
+ snapshot.forEach(d=>{
+  const x=d.data();
+  if(x.status!=="Pending") return;
+  box.innerHTML+=`
+   <div class="req">
+    User: ${x.uid}<br>
+    Amount: ₹${x.amount}<br>
+    <button class="approve" onclick="approveDeposit('${d.id}','${x.uid}',${x.amount})">Approve</button>
+    <button class="reject" onclick="rejectDeposit('${d.id}')">Reject</button>
+   </div>`;
+ });
 }
 
 window.approveDeposit=async(id,uid,amt)=>{
-  await updateDoc(doc(db,"deposits",id),{status:"approved"});
-  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
-  location.reload();
+ await updateDoc(doc(db,"depositRequests",id),{status:"Approved"});
+ await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
+ location.reload();
 };
+
 window.rejectDeposit=async(id)=>{
-  await updateDoc(doc(db,"deposits",id),{status:"rejected"});
-  location.reload();
+ await updateDoc(doc(db,"depositRequests",id),{status:"Rejected"});
+ location.reload();
 };
 
 function renderWithdraws(snapshot){
-  const box=document.getElementById("withdrawList");
-  box.innerHTML="";
-  snapshot.forEach(d=>{
-    const x=d.data();
-    if(x.status!=="pending") return;
-    box.innerHTML+=`
-    <div class="req">
-      User: ${x.uid}<br>
-      Amount: ₹${x.amount}<br>
-      UPI: ${x.upi}<br>
-      <button class="approve" onclick="approveWithdraw('${d.id}')">Approve</button>
-      <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
-    </div>`;
-  });
+ const box=document.getElementById("withdrawList");
+ box.innerHTML="";
+ snapshot.forEach(d=>{
+  const x=d.data();
+  if(x.status!=="Pending") return;
+  box.innerHTML+=`
+   <div class="req">
+    User: ${x.uid}<br>
+    Amount: ₹${x.amount}<br>
+    UPI: ${x.upi}<br>
+    <button class="approve" onclick="approveWithdraw('${d.id}','${x.uid}',${x.amount})">Approve</button>
+    <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
+   </div>`;
+ });
 }
 
-window.approveWithdraw=async(id)=>{
-  await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
-  location.reload();
-};
-window.rejectWithdraw=async(id)=>{
-  await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
-  location.reload();
+window.approveWithdraw=async(id,uid,amt)=>{
+ await updateDoc(doc(db,"withdrawRequests",id),{status:"Approved"});
+ await updateDoc(doc(db,"users",uid),{totalEarned:increment(-amt)});
+ location.reload();
 };
 
-window.logout=()=>{
-  signOut(auth).then(()=>location.href="index.html");
+window.rejectWithdraw=async(id)=>{
+ await updateDoc(doc(db,"withdrawRequests",id),{status:"Rejected"});
+ location.reload();
 };
+
+window.logout=()=>signOut(auth).then(()=>location.href="index.html");
 </script>
 
 </body>
