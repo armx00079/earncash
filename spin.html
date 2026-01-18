@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RozanaCash – Spin</title>
+<title>RozanaCash Spin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#f3f3f3;
+  background:#f2f2f2;
 }
 .header{
   background:#5e239d;
-  color:white;
+  color:#fff;
   text-align:center;
   padding:14px;
   font-size:20px;
@@ -22,58 +22,31 @@ body{
   background:#5e239d;
   color:white;
   margin:15px;
-  border-radius:15px;
+  border-radius:16px;
   padding:15px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 .card button{
-  background:white;
+  background:#fff;
   border:none;
   padding:8px 14px;
   border-radius:20px;
-  cursor:pointer;
+  font-weight:bold;
 }
 .wheel-box{
   text-align:center;
   margin-top:20px;
 }
 .pointer{
-  width:0;
-  height:0;
+  width:0;height:0;
   border-left:15px solid transparent;
   border-right:15px solid transparent;
   border-bottom:25px solid red;
   margin:auto;
 }
-.wheel{
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  margin:auto;
-  position:relative;
-  transition:transform 3s ease-out;
-  background:conic-gradient(
-    #5b189a 0deg 40deg,     /* 200 */
-    #6a1bb1 40deg 80deg,   /* 150 */
-    #7b2cbf 80deg 120deg,  /* 130 */
-    #8e44ad 120deg 160deg, /* 100 */
-    #9b59b6 160deg 200deg, /* 60 */
-    #8e44ad 200deg 240deg, /* 40 */
-    #7b2cbf 240deg 280deg, /* 20 */
-    #6a1bb1 280deg 320deg, /* -20 */
-    #5b189a 320deg 360deg  /* -60 */
-  );
-}
-.label{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform-origin:0 0;
-  font-size:16px;
-  font-weight:bold;
-  color:white;
+canvas{
+  margin-top:10px;
 }
 .spin-btn{
   margin-top:20px;
@@ -82,10 +55,7 @@ body{
   padding:14px 40px;
   border-radius:30px;
   font-size:18px;
-  cursor:pointer;
-}
-.back{
-  margin-top:15px;
+  font-weight:bold;
 }
 .back a{
   text-decoration:none;
@@ -101,7 +71,7 @@ body{
 <div class="card">
   <div>
     Wallet ₹<span id="wallet">0</span><br>
-    <button onclick="openDeposit()">More Spin</button>
+    <button onclick="deposit()">More Spin</button>
   </div>
   <div>
     Winning ₹<span id="winning">0</span><br>
@@ -111,21 +81,9 @@ body{
 
 <div class="wheel-box">
   <div class="pointer"></div>
-
-  <div class="wheel" id="wheel">
-    <div class="label" style="transform:rotate(20deg) translate(110px)">200</div>
-    <div class="label" style="transform:rotate(60deg) translate(110px)">150</div>
-    <div class="label" style="transform:rotate(100deg) translate(110px)">130</div>
-    <div class="label" style="transform:rotate(140deg) translate(110px)">100</div>
-    <div class="label" style="transform:rotate(180deg) translate(110px)">60</div>
-    <div class="label" style="transform:rotate(220deg) translate(110px)">40</div>
-    <div class="label" style="transform:rotate(260deg) translate(110px)">20</div>
-    <div class="label" style="transform:rotate(300deg) translate(110px)">-20</div>
-    <div class="label" style="transform:rotate(340deg) translate(110px)">-60</div>
-  </div>
-
+  <canvas id="wheel" width="300" height="300"></canvas>
+  <br>
   <button class="spin-btn" id="spinBtn">SPIN</button>
-
   <div class="back">
     <a href="dashboard.html">← Back to Dashboard</a>
   </div>
@@ -133,91 +91,99 @@ body{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore,doc,getDoc,updateDoc,increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain: "earncash7-f0ecc.firebaseapp.com",
-  projectId: "earncash7-f0ecc",
-  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+/* 🔥 Firebase */
+const firebaseConfig={
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+ authDomain:"earncash7-f0ecc.firebaseapp.com",
+ projectId:"earncash7-f0ecc",
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+/* 🎯 WHEEL DATA (EXACT) */
+const slices=[-60,-20,20,40,60,100,150,200];
+const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
+const spinCost=20;
 
-const spinCost = 20;
-
-// 🔥 ADMIN CONTROL (loss zyada)
-const rewards = [
-  { value: -60, weight: 25 },
-  { value: -20, weight: 25 },
-  { value: 0,   weight: 20 },
-  { value: 20,  weight: 15 },
-  { value: 40,  weight: 8 },
-  { value: 60,  weight: 5 },
-  { value: 100, weight: 2 }
-];
-
-function getReward(){
-  let bag=[];
-  rewards.forEach(r=>{
-    for(let i=0;i<r.weight;i++) bag.push(r.value);
-  });
-  return bag[Math.floor(Math.random()*bag.length)];
-}
-
+const canvas=document.getElementById("wheel");
+const ctx=canvas.getContext("2d");
+const cx=150,cy=150,radius=140;
+let currentAngle=0;
 let userRef;
 
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    window.location.href="index.html";
-    return;
-  }
-  userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-  wallet.innerText = snap.data().balance;
-  winning.innerText = snap.data().totalEarned;
+/* 🎨 Draw Wheel */
+function drawWheel(){
+ const arc=2*Math.PI/slices.length;
+ ctx.clearRect(0,0,300,300);
+ slices.forEach((val,i)=>{
+  const angle=i*arc+currentAngle;
+  ctx.beginPath();
+  ctx.fillStyle=colors[i];
+  ctx.moveTo(cx,cy);
+  ctx.arc(cx,cy,radius,angle,angle+arc);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(angle+arc/2);
+  ctx.fillStyle="#fff";
+  ctx.font="bold 16px Arial";
+  ctx.textAlign="right";
+  ctx.fillText(val, radius-10,5);
+  ctx.restore();
+ });
+}
+drawWheel();
+
+/* 🔐 AUTH */
+onAuthStateChanged(auth,async user=>{
+ if(!user){location.href="index.html";return;}
+ userRef=doc(db,"users",user.uid);
+ const snap=await getDoc(userRef);
+ wallet.innerText=snap.data().balance;
+ winning.innerText=snap.data().totalEarned;
 });
 
-spinBtn.onclick = async()=>{
-  const snap = await getDoc(userRef);
-  const balance = snap.data().balance;
+/* 🎰 SPIN LOGIC (MATCH FIXED) */
+spinBtn.onclick=async()=>{
+ const snap=await getDoc(userRef);
+ if(snap.data().balance < spinCost){
+  alert("❌ Minimum 20 coins required");
+  return;
+ }
 
-  if(balance < spinCost){
-    alert("❌ Minimum 20 coins required");
-    return;
-  }
+ const arc=360/slices.length;
+ const index=Math.floor(Math.random()*slices.length);
+ const reward=slices[index];
 
-  const reward = getReward();
-  const angle = Math.floor(Math.random()*360) + 1080;
-  wheel.style.transform = `rotate(${angle}deg)`;
+ const rotateTo=360*5 + (360 - index*arc - arc/2);
+ currentAngle=(rotateTo*Math.PI/180);
 
-  await updateDoc(userRef,{
-    balance: increment(-spinCost + reward),
-    totalEarned: increment(reward)
-  });
+ canvas.style.transition="transform 4s ease-out";
+ canvas.style.transform=`rotate(${rotateTo}deg)`;
 
-  setTimeout(async()=>{
-    const s = await getDoc(userRef);
-    wallet.innerText = s.data().balance;
-    winning.innerText = s.data().totalEarned;
-    alert("🎯 Result: ₹"+reward);
-  },3000);
+ await updateDoc(userRef,{
+  balance:increment(-spinCost + reward),
+  totalEarned:increment(reward>0?reward:0)
+ });
+
+ setTimeout(async()=>{
+  const s=await getDoc(userRef);
+  wallet.innerText=s.data().balance;
+  winning.innerText=s.data().totalEarned;
+  alert("🎯 Result: ₹"+reward);
+ },4000);
 };
 
-window.openDeposit = ()=>{
-  alert("💰 Deposit (UPI) next module");
-};
-
-window.withdraw = ()=>{
-  const win = parseInt(winning.innerText);
-  if(win < 500){
-    alert("❌ Minimum withdrawal ₹500");
-  }else{
-    alert("✅ Withdraw request submitted");
-  }
+window.deposit=()=>alert("💰 UPI Deposit next step");
+window.withdraw=()=>{
+ if(parseInt(winning.innerText)<500) alert("❌ Minimum withdraw ₹500");
+ else alert("✅ Withdraw request sent");
 };
 </script>
 
