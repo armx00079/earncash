@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Deposit – RozanaCash</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#f3f3f3;margin:0}
+.header{background:#5e239d;color:#fff;text-align:center;padding:15px}
+.box{
+ background:#fff;
+ margin:20px;
+ padding:20px;
+ border-radius:12px;
+}
+input,button{
+ width:100%;
+ padding:12px;
+ margin-top:10px;
+ font-size:16px;
+}
+button{
+ background:#5e239d;
+ color:#fff;
+ border:none;
+ border-radius:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">Deposit Coins</div>
+
+<div class="box">
+ <p>UPI ID: <b>yourupi@paytm</b></p>
+ <p>Pay and enter amount</p>
+
+ <input type="number" id="amount" placeholder="Enter amount">
+ <button onclick="submitDeposit()">Submit</button>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {getFirestore,doc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+ authDomain:"earncash7-f0ecc.firebaseapp.com",
+ projectId:"earncash7-f0ecc",
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let uid;
+
+onAuthStateChanged(auth,user=>{
+ if(!user) location.href="index.html";
+ uid=user.uid;
+});
+
+window.submitDeposit=async()=>{
+ const amt=parseInt(amount.value);
+ if(amt<100){alert("Minimum ₹100");return;}
+
+ await setDoc(doc(db,"deposits",Date.now().toString()),{
+  uid,
+  amount:amt,
+  status:"pending",
+  time:serverTimestamp()
+ });
+
+ alert("Deposit submitted. Admin will approve.");
+};
+</script>
+
+</body>
+</html>
