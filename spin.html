@@ -10,6 +10,7 @@ body{
   margin:0;
   font-family:Arial;
   background:#f2f2f2;
+  padding-bottom:90px;
 }
 .header{
   background:#5e239d;
@@ -45,9 +46,7 @@ body{
   border-bottom:25px solid red;
   margin:auto;
 }
-canvas{
-  margin-top:10px;
-}
+canvas{margin-top:10px;}
 .spin-btn{
   margin-top:20px;
   background:#ffcc00;
@@ -57,22 +56,35 @@ canvas{
   font-size:18px;
   font-weight:bold;
 }
-.back{
-  margin-top:12px;
-}
 .back a{
   text-decoration:none;
   color:#5e239d;
   font-weight:bold;
 }
-.history-btn{
-  margin-top:10px;
-  padding:10px 22px;
-  border:none;
-  border-radius:20px;
+
+/* 🔥 BOTTOM NAV (TRUSTED UI) */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
   background:#5e239d;
-  color:white;
-  font-size:15px;
+  display:flex;
+  justify-content:space-around;
+  padding:12px 0;
+  border-radius:20px 20px 0 0;
+  box-shadow:0 -2px 10px rgba(0,0,0,0.2);
+}
+.bottom-nav button{
+  background:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:25px;
+  font-size:14px;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
 </style>
 </head>
@@ -94,18 +106,18 @@ canvas{
 
 <div class="wheel-box">
   <div class="pointer"></div>
-  <canvas id="wheel" width="300" height="300"></canvas>
-  <br>
+  <canvas id="wheel" width="300" height="300"></canvas><br>
   <button class="spin-btn" id="spinBtn">SPIN</button>
-
   <div class="back">
     <a href="dashboard.html">← Back to Dashboard</a>
   </div>
+</div>
 
-  <!-- ✅ MY HISTORY BUTTON (ADDED HERE) -->
-  <button class="history-btn" onclick="location.href='history.html'">
-    📜 My History
-  </button>
+<!-- ✅ TRUSTED BOTTOM NAV -->
+<div class="bottom-nav">
+  <button onclick="location.href='dashboard.html'">🏠 Home</button>
+  <button onclick="location.href='history.html'">📜 History</button>
+  <button onclick="alert('Profile coming soon')">👤 Profile</button>
 </div>
 
 <script type="module">
@@ -113,7 +125,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore,doc,getDoc,updateDoc,increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔥 Firebase */
 const firebaseConfig={
  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
  authDomain:"earncash7-f0ecc.firebaseapp.com",
@@ -124,7 +135,6 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🎯 WHEEL DATA */
 const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
 const spinCost=20;
@@ -135,7 +145,6 @@ const cx=150,cy=150,radius=140;
 let currentAngle=0;
 let userRef;
 
-/* 🎨 Draw Wheel */
 function drawWheel(){
  const arc=2*Math.PI/slices.length;
  ctx.clearRect(0,0,300,300);
@@ -159,7 +168,6 @@ function drawWheel(){
 }
 drawWheel();
 
-/* 🔐 AUTH */
 onAuthStateChanged(auth,async user=>{
  if(!user){location.href="index.html";return;}
  userRef=doc(db,"users",user.uid);
@@ -168,7 +176,6 @@ onAuthStateChanged(auth,async user=>{
  winning.innerText=snap.data().totalEarned;
 });
 
-/* 🎰 SPIN LOGIC */
 spinBtn.onclick=async()=>{
  const snap=await getDoc(userRef);
  if(snap.data().balance < spinCost){
@@ -199,8 +206,8 @@ spinBtn.onclick=async()=>{
  },4000);
 };
 
-window.deposit = ()=>location.href="deposit.html";
-window.withdraw = ()=>location.href="withdraw.html";
+window.deposit=()=>location.href="deposit.html";
+window.withdraw=()=>location.href="withdraw.html";
 </script>
 
 </body>
