@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Deposit</title>
+<title>Add Money</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;font-family:Arial;background:#f2f2f2}
-.header{background:#5e239d;color:white;text-align:center;padding:15px;font-size:20px}
-.box{
-  background:white;
-  margin:20px;
+.header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:15px}
+.pack{
+  background:#e8e6f7;
   border-radius:15px;
   padding:20px;
   text-align:center;
+  font-size:16px;
+  cursor:pointer;
 }
+.pack strong{font-size:20px}
+.active{background:#5e239d;color:white}
 .btn{
+  margin:20px;
   background:#5e239d;
   color:white;
   border:none;
-  padding:14px 30px;
+  padding:15px;
   border-radius:30px;
-  font-size:16px;
+  width:calc(100% - 40px);
+  font-size:18px;
 }
 </style>
 </head>
@@ -27,61 +33,31 @@ body{margin:0;font-family:Arial;background:#f2f2f2}
 <body>
 <div class="header">Add Money</div>
 
-<div class="box">
-  <h3>Amount: ₹<span id="amt"></span></h3>
-  <p>Scan & Pay</p>
-  <img id="qr" width="220"><br><br>
-  <a id="upiBtn"><button class="btn">Pay via UPI App</button></a>
-  <br><br>
-  <button onclick="submit()" class="btn">Payment Done</button>
+<div class="grid">
+  <div class="pack active" onclick="selectPack(100,5)">Spin 5<br><strong>₹100</strong></div>
+  <div class="pack" onclick="selectPack(199,10)">Spin 10<br><strong>₹199</strong></div>
+  <div class="pack" onclick="selectPack(298,15)">Spin 15<br><strong>₹298</strong></div>
+  <div class="pack" onclick="selectPack(400,20)">Spin 20<br><strong>₹400</strong></div>
+  <div class="pack" onclick="selectPack(498,25)">Spin 25<br><strong>₹498</strong></div>
+  <div class="pack" onclick="selectPack(599,30)">Spin 30<br><strong>₹599</strong></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,addDoc,collection,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<button class="btn" onclick="goDeposit()">Add Money</button>
 
-const firebaseConfig={
-  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain:"earncash7-f0ecc.firebaseapp.com",
-  projectId:"earncash7-f0ecc",
-  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
+<script>
+let selectedAmount = 100;
+let selectedSpins = 5;
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+function selectPack(amount, spins){
+  selectedAmount = amount;
+  selectedSpins = spins;
+  document.querySelectorAll('.pack').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
 
-const params=new URLSearchParams(location.search);
-const amount=params.get("amount");
-const spins=params.get("spins");
-
-document.getElementById("amt").innerText=amount;
-
-const upi="upi://pay?pa=8302299569@ybl&pn=RozanaCash&am="+amount+"&cu=INR";
-
-document.getElementById("upiBtn").href=upi;
-document.getElementById("qr").src=
-`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upi)}`;
-
-let currentUser;
-
-onAuthStateChanged(auth,u=>{
-  if(!u) location.href="index.html";
-  currentUser=u;
-});
-
-window.submit=async()=>{
-  await addDoc(collection(db,"deposits"),{
-    uid:currentUser.uid,
-    amount:Number(amount),
-    spins:Number(spins),
-    status:"pending",
-    createdAt:serverTimestamp()
-  });
-  alert("✅ Payment submitted. Spins added after admin approval.");
-  location.href="dashboard.html";
-};
+function goDeposit(){
+  location.href = `deposit.html?amount=${selectedAmount}&spins=${selectedSpins}`;
+}
 </script>
 
 </body>
