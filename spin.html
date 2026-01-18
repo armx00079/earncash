@@ -38,7 +38,6 @@ body{
 .wheel-box{
   text-align:center;
   margin-top:20px;
-  position:relative;
 }
 .pointer{
   width:0;
@@ -48,15 +47,13 @@ body{
   border-bottom:25px solid red;
   margin:auto;
 }
-.wheel-container{
-  position:relative;
-  width:280px;
-  height:280px;
-  margin:auto;
-} .wheel{
+.wheel{
   width:260px;
   height:260px;
   border-radius:50%;
+  margin:auto;
+  position:relative;
+  transition:transform 3s ease-out;
   background:conic-gradient(
     #5b189a 0deg 40deg,     /* 200 */
     #6a1bb1 40deg 80deg,   /* 150 */
@@ -68,19 +65,15 @@ body{
     #6a1bb1 280deg 320deg, /* -20 */
     #5b189a 320deg 360deg  /* -60 */
   );
-  margin:auto;
-  position:relative;
-  transition:transform 3s ease-out;
-}
 }
 .label{
   position:absolute;
   top:50%;
   left:50%;
   transform-origin:0 0;
+  font-size:16px;
   font-weight:bold;
   color:white;
-  font-size:16px;
 }
 .spin-btn{
   margin-top:20px;
@@ -119,18 +112,16 @@ body{
 <div class="wheel-box">
   <div class="pointer"></div>
 
-  <div class="wheel-container">
-    <div class="wheel" id="wheel"></div>
-
-    <!-- NUMBER LABELS -->
-    <div class="label" style="transform:rotate(0deg) translate(110px,-10px)">20</div>
-    <div class="label" style="transform:rotate(45deg) translate(110px,-10px)">40</div>
-    <div class="label" style="transform:rotate(90deg) translate(110px,-10px)">60</div>
-    <div class="label" style="transform:rotate(135deg) translate(110px,-10px)">-20</div>
-    <div class="label" style="transform:rotate(180deg) translate(110px,-10px)">100</div>
-    <div class="label" style="transform:rotate(225deg) translate(110px,-10px)">130</div>
-    <div class="label" style="transform:rotate(270deg) translate(110px,-10px)">150</div>
-    <div class="label" style="transform:rotate(315deg) translate(110px,-10px)">200</div>
+  <div class="wheel" id="wheel">
+    <div class="label" style="transform:rotate(20deg) translate(110px)">200</div>
+    <div class="label" style="transform:rotate(60deg) translate(110px)">150</div>
+    <div class="label" style="transform:rotate(100deg) translate(110px)">130</div>
+    <div class="label" style="transform:rotate(140deg) translate(110px)">100</div>
+    <div class="label" style="transform:rotate(180deg) translate(110px)">60</div>
+    <div class="label" style="transform:rotate(220deg) translate(110px)">40</div>
+    <div class="label" style="transform:rotate(260deg) translate(110px)">20</div>
+    <div class="label" style="transform:rotate(300deg) translate(110px)">-20</div>
+    <div class="label" style="transform:rotate(340deg) translate(110px)">-60</div>
   </div>
 
   <button class="spin-btn" id="spinBtn">SPIN</button>
@@ -158,13 +149,15 @@ const db = getFirestore(app);
 
 const spinCost = 20;
 
-// ADMIN CONTROL (LOSS ZYADA – WIN KAM)
+// 🔥 ADMIN CONTROL (loss zyada)
 const rewards = [
-  { value: 0, weight: 40 },
-  { value: 10, weight: 30 },
-  { value: 20, weight: 20 },
-  { value: 40, weight: 7 },
-  { value: 60, weight: 3 }
+  { value: -60, weight: 25 },
+  { value: -20, weight: 25 },
+  { value: 0,   weight: 20 },
+  { value: 20,  weight: 15 },
+  { value: 40,  weight: 8 },
+  { value: 60,  weight: 5 },
+  { value: 100, weight: 2 }
 ];
 
 function getReward(){
@@ -210,16 +203,17 @@ spinBtn.onclick = async()=>{
     const s = await getDoc(userRef);
     wallet.innerText = s.data().balance;
     winning.innerText = s.data().totalEarned;
-    alert("🎉 You won ₹"+reward);
+    alert("🎯 Result: ₹"+reward);
   },3000);
 };
 
 window.openDeposit = ()=>{
-  alert("💰 Deposit (UPI) next step");
+  alert("💰 Deposit (UPI) next module");
 };
 
 window.withdraw = ()=>{
-  if(parseInt(winning.innerText) < 500){
+  const win = parseInt(winning.innerText);
+  if(win < 500){
     alert("❌ Minimum withdrawal ₹500");
   }else{
     alert("✅ Withdraw request submitted");
