@@ -1,127 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Add Money – RozanaCash</title>
+<title>Add Money</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#f3f3f3;
-}
-.header{
-  background:#5e239d;
-  color:white;
-  text-align:center;
-  padding:15px;
-  font-size:20px;
-}
-.box{
-  background:white;
-  margin:20px;
-  padding:20px;
+body{margin:0;font-family:Arial;background:#f2f2f2}
+.header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:15px}
+.pack{
+  background:#e8e6f7;
   border-radius:15px;
+  padding:20px;
   text-align:center;
-}
-.amount{
-  font-size:22px;
-  margin-bottom:10px;
-}
-.qr{
-  margin:15px 0;
-}
-button{
-  background:#5e239d;
-  color:white;
-  border:none;
-  padding:12px 25px;
-  border-radius:25px;
   font-size:16px;
   cursor:pointer;
 }
-.back{
-  margin-top:15px;
-}
-.back a{
-  text-decoration:none;
-  color:#5e239d;
+.pack strong{font-size:20px}
+.active{background:#5e239d;color:white}
+.btn{
+  margin:20px;
+  background:#5e239d;
+  color:white;
+  border:none;
+  padding:15px;
+  border-radius:30px;
+  width:calc(100% - 40px);
+  font-size:18px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="header">Add Money</div>
 
-<div class="box">
-  <div class="amount">Amount: ₹<span id="amt">100</span></div>
-
-  <!-- QR CODE -->
-  <div class="qr">
-    <img id="qrImg" width="200">
-  </div>
-
-  <button onclick="payNow()">Pay via UPI App</button>
-
-  <div class="back">
-    <a href="dashboard.html">← Back</a>
-  </div>
+<div class="grid">
+  <div class="pack active" onclick="selectPack(100,5)">Spin 5<br><strong>₹100</strong></div>
+  <div class="pack" onclick="selectPack(199,10)">Spin 10<br><strong>₹199</strong></div>
+  <div class="pack" onclick="selectPack(298,15)">Spin 15<br><strong>₹298</strong></div>
+  <div class="pack" onclick="selectPack(400,20)">Spin 20<br><strong>₹400</strong></div>
+  <div class="pack" onclick="selectPack(498,25)">Spin 25<br><strong>₹498</strong></div>
+  <div class="pack" onclick="selectPack(599,30)">Spin 30<br><strong>₹599</strong></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<button class="btn" onclick="goDeposit()">Add Money</button>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain: "earncash7-f0ecc.firebaseapp.com",
-  projectId: "earncash7-f0ecc",
-  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
+<script>
+let selectedAmount = 100;
+let selectedSpins = 5;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+function selectPack(amount, spins){
+  selectedAmount = amount;
+  selectedSpins = spins;
+  document.querySelectorAll('.pack').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
 
-// CHANGE THIS 👇
-const UPI_ID = "8302299569@ybl";
-const PAYEE_NAME = "RozanaCash";
-
-const amount = 100;
-document.getElementById("amt").innerText = amount;
-
-// QR GENERATE
-const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${PAYEE_NAME}&am=${amount}&cu=INR`;
-document.getElementById("qrImg").src =
-  `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
-
-let currentUser;
-
-onAuthStateChanged(auth,user=>{
-  if(!user){
-    location.href="index.html";
-  }
-  currentUser = user;
-});
-
-window.payNow = async()=>{
-  // Open UPI app
-  window.location.href = upiUrl;
-
-  // Save deposit request
-  await addDoc(collection(db,"deposits"),{
-    uid: currentUser.uid,
-    amount: amount,
-    spins: 5,
-    status: "pending",
-    createdAt: serverTimestamp()
-  });
-
-  alert("✅ Payment initiated. Spins added after admin approval.");
-};
+function goDeposit(){
+  location.href = `deposit.html?amount=${selectedAmount}&spins=${selectedSpins}`;
+}
 </script>
 
 </body>
