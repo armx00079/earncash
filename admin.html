@@ -90,13 +90,13 @@ async function loadDashboard(){
  totalUsers.innerText=users.size;
 
  let totalDep=0,pendingDep=0,todayDep=0;
- const deposits=await getDocs(collection(db,"depositReq"));
+ const deposits=await getDocs(collection(db,"payments"));
 
  deposits.forEach(d=>{
    const x=d.data();
-   if(x.status==="Approved") totalDep+=x.amount;
-   if(x.status==="Pending") pendingDep++;
-   if(x.status==="Approved" && x.createdAt?.toDate().toDateString()===today)
+   if(x.status==="approved") totalDep+=x.amount;
+   if(x.status==="pending") pendingDep++;
+   if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
      todayDep+=x.amount;
  });
 
@@ -109,8 +109,8 @@ async function loadDashboard(){
 
  withdraws.forEach(d=>{
    const x=d.data();
-   if(x.status==="Pending") pendingW++;
-   if(x.status==="Approved" && x.createdAt?.toDate().toDateString()===today)
+   if(x.status==="pending") pendingW++;
+   if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
      todayW+=x.amount;
  });
 
@@ -126,7 +126,7 @@ function renderDeposits(snapshot){
  depositList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if(x.status!=="Pending") return;
+  if(x.status!=="pending") return;
   depositList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
@@ -138,13 +138,13 @@ function renderDeposits(snapshot){
 }
 
 window.approveDeposit=async(id,uid,amt)=>{
- await updateDoc(doc(db,"depositReq",id),{status:"Approved"});
+ await updateDoc(doc(db,"payments",id),{status:"approved"});
  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
  location.reload();
 };
 
 window.rejectDeposit=async(id)=>{
- await updateDoc(doc(db,"depositReq",id),{status:"Rejected"});
+ await updateDoc(doc(db,"payments",id),{status:"rejected"});
  location.reload();
 };
 
@@ -152,7 +152,7 @@ function renderWithdraws(snapshot){
  withdrawList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if(x.status!=="Pending") return;
+  if(x.status!=="pending") return;
   withdrawList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
@@ -165,13 +165,13 @@ function renderWithdraws(snapshot){
 }
 
 window.approveWithdraw=async(id,uid,amt)=>{
- await updateDoc(doc(db,"withdrawRequests",id),{status:"Approved"});
+ await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
  await updateDoc(doc(db,"users",uid),{totalEarned:increment(-amt)});
  location.reload();
 };
 
 window.rejectWithdraw=async(id)=>{
- await updateDoc(doc(db,"withdrawRequests",id),{status:"Rejected"});
+ await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
  location.reload();
 };
 
