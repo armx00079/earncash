@@ -9,7 +9,7 @@
 body{
   margin:0;
   font-family:Arial;
-  background:#f4f4f4;
+  background:#f2f2f2;
 }
 .header{
   background:#5e239d;
@@ -18,7 +18,7 @@ body{
   padding:15px;
   font-size:20px;
 }
-.section{
+.card{
   background:white;
   margin:15px;
   border-radius:15px;
@@ -27,22 +27,17 @@ body{
 .item{
   border-bottom:1px solid #eee;
   padding:10px 0;
-  font-size:14px;
 }
 .item:last-child{border:none}
-.status{
-  font-weight:bold;
-}
-.pending{color:orange}
-.approved{color:green}
-.rejected{color:red}
+.green{color:#2e7d32;font-weight:bold}
+.red{color:#c62828;font-weight:bold}
+.gray{color:#777}
 .back{
   margin:20px;
   background:#e53935;
   color:white;
-  border:none;
-  width:calc(100% - 40px);
   padding:14px;
+  text-align:center;
   border-radius:30px;
   font-size:18px;
 }
@@ -53,22 +48,22 @@ body{
 
 <div class="header">📜 My History</div>
 
-<div class="section">
+<div class="card">
   <h3>💰 Deposit History</h3>
-  <div id="depositList">Loading...</div>
+  <div id="depositHistory">Loading...</div>
 </div>
 
-<div class="section">
+<div class="card">
   <h3>🏧 Withdrawal History</h3>
-  <div id="withdrawList">Loading...</div>
+  <div id="withdrawHistory">Loading...</div>
 </div>
 
-<button class="back" onclick="location.href='dashboard.html'">← Back</button>
+<div class="back" onclick="location.href='dashboard.html'">← Back</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,collection,query,where,orderBy,getDocs } 
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
@@ -78,61 +73,63 @@ const firebaseConfig={
  appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-onAuthStateChanged(auth,async user=>{
+onAuthStateChanged(auth, async(user)=>{
  if(!user){
-  location.href="index.html";
-  return;
+   location.href="index.html";
+   return;
  }
 
- // 🔽 DEPOSIT HISTORY
- const depQ=query(
-  collection(db,"depositRequests"),
-  where("uid","==",user.uid),
-  orderBy("createdAt","desc")
+ /* 🔹 DEPOSIT HISTORY */
+ const depQ = query(
+   collection(db,"payments"),
+   where("uid","==",user.uid),
+   orderBy("createdAt","desc")
  );
- const depSnap=await getDocs(depQ);
+ const depSnap = await getDocs(depQ);
 
- let depHTML="";
  if(depSnap.empty){
-  depHTML="No deposits found";
+   depositHistory.innerHTML="No deposits found";
  }else{
-  depSnap.forEach(d=>{
-   const x=d.data();
-   depHTML+=`
-    <div class="item">
-     ₹${x.amount} | Spins: ${x.spins || "-"}<br>
-     <span class="status ${x.status}">${x.status}</span>
-    </div>`;
-  });
+   depositHistory.innerHTML="";
+   depSnap.forEach(d=>{
+     const x=d.data();
+     depositHistory.innerHTML+=`
+       <div class="item">
+         Amount: ₹${x.amount}<br>
+         Spins: ${x.spins}<br>
+         Status: <span class="${x.status==='approved'?'green':'red'}">${x.status}</span><br>
+         <span class="gray">${x.createdAt?.toDate().toLocaleString()}</span>
+       </div>`;
+   });
  }
- document.getElementById("depositList").innerHTML=depHTML;
 
- // 🔽 WITHDRAW HISTORY
- const witQ=query(
-  collection(db,"withdrawRequests"),
-  where("uid","==",user.uid),
-  orderBy("createdAt","desc")
+ /* 🔹 WITHDRAW HISTORY */
+ const wdQ = query(
+   collection(db,"withdrawRequests"),
+   where("uid","==",user.uid),
+   orderBy("createdAt","desc")
  );
- const witSnap=await getDocs(witQ);
+ const wdSnap = await getDocs(wdQ);
 
- let witHTML="";
- if(witSnap.empty){
-  witHTML="No withdrawals found";
+ if(wdSnap.empty){
+   withdrawHistory.innerHTML="No withdrawals found";
  }else{
-  witSnap.forEach(d=>{
-   const x=d.data();
-   witHTML+=`
-    <div class="item">
-     ₹${x.amount}<br>
-     <span class="status ${x.status}">${x.status}</span>
-    </div>`;
-  });
+   withdrawHistory.innerHTML="";
+   wdSnap.forEach(d=>{
+     const x=d.data();
+     withdrawHistory.innerHTML+=`
+       <div class="item">
+         Amount: ₹${x.amount}<br>
+         UPI: ${x.upi}<br>
+         Status: <span class="${x.status==='approved'?'green':'red'}">${x.status}</span><br>
+         <span class="gray">${x.createdAt?.toDate().toLocaleString()}</span>
+       </div>`;
+   });
  }
- document.getElementById("withdrawList").innerHTML=witHTML;
 });
 </script>
 
