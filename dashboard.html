@@ -29,6 +29,13 @@
     }
     p {
       margin: 6px 0;
+      font-size: 15px;
+    }
+    .balance {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+      color: green;
     }
     button {
       margin-top: 15px;
@@ -51,10 +58,14 @@
   <h2>Welcome 🎉</h2>
   <p id="name">Loading...</p>
   <p id="email"></p>
+  <div class="balance">
+    Balance: <span id="balance">0</span> Coins
+  </div>
   <button id="logoutBtn">Logout</button>
 </div>
 
 <script type="module">
+  // 🔥 Firebase core
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import {
     getAuth,
@@ -62,6 +73,15 @@
     signOut
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+  // 🔥 Firestore
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 🔥 Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
     authDomain: "earncash7-f0ecc.firebaseapp.com",
@@ -69,15 +89,37 @@
     appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
   };
 
+  // Init
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // 🔐 LOGIN CHECK
-  onAuthStateChanged(auth, (user) => {
+  // 🔐 AUTH + WALLET LOGIC
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       // ❌ Login nahi → login page
       window.location.href = "index.html";
     } else {
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        // 🆕 New user → wallet create
+        await setDoc(userRef, {
+          name: user.displayName,
+          email: user.email,
+          balance: 10,
+          totalEarned: 10,
+          createdAt: new Date()
+        });
+
+        document.getElementById("balance").innerText = "10";
+      } else {
+        // 👤 Existing user
+        document.getElementById("balance").innerText =
+          snap.data().balance;
+      }
+
       document.getElementById("name").innerText =
         "Name: " + user.displayName;
       document.getElementById("email").innerText =
