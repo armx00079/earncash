@@ -15,38 +15,58 @@
       align-items: center;
       height: 100vh;
     }
+
     .box {
       background: white;
       padding: 25px;
-      border-radius: 10px;
+      border-radius: 12px;
       text-align: center;
       width: 90%;
       max-width: 400px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+
     h2 {
       margin-bottom: 10px;
     }
+
     p {
       margin: 6px 0;
       font-size: 15px;
     }
+
     .balance {
       font-size: 20px;
       font-weight: bold;
       margin: 15px 0;
       color: green;
     }
-    button {
-      margin-top: 15px;
-      padding: 10px 18px;
+
+    .btn {
+      margin-top: 12px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .enter {
+      background: #5e239d;
+      color: white;
+    }
+
+    .enter:hover {
+      background: #4a1c7a;
+    }
+
+    .logout {
       background: #e53935;
       color: white;
-      cursor: pointer;
     }
-    button:hover {
+
+    .logout:hover {
       background: #c62828;
     }
   </style>
@@ -56,12 +76,23 @@
 
 <div class="box">
   <h2>Welcome 🎉</h2>
+
   <p id="name">Loading...</p>
   <p id="email"></p>
+
   <div class="balance">
     Balance: <span id="balance">0</span> Coins
   </div>
-  <button id="logoutBtn">Logout</button>
+
+  <!-- 🔥 ENTER APP BUTTON -->
+  <button class="btn enter" id="enterAppBtn">
+    Enter App 🚀
+  </button>
+
+  <!-- 🚪 LOGOUT -->
+  <button class="btn logout" id="logoutBtn">
+    Logout
+  </button>
 </div>
 
 <script type="module">
@@ -97,35 +128,41 @@
   // 🔐 AUTH + WALLET LOGIC
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      // ❌ Login nahi → login page
+      // ❌ Not logged in
       window.location.href = "index.html";
-    } else {
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-
-      if (!snap.exists()) {
-        // 🆕 New user → wallet create
-        await setDoc(userRef, {
-          name: user.displayName,
-          email: user.email,
-          balance: 10,
-          totalEarned: 10,
-          createdAt: new Date()
-        });
-
-        document.getElementById("balance").innerText = "10";
-      } else {
-        // 👤 Existing user
-        document.getElementById("balance").innerText =
-          snap.data().balance;
-      }
-
-      document.getElementById("name").innerText =
-        "Name: " + user.displayName;
-      document.getElementById("email").innerText =
-        "Email: " + user.email;
+      return;
     }
+
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      // 🆕 New user
+      await setDoc(userRef, {
+        name: user.displayName,
+        email: user.email,
+        balance: 10,
+        totalEarned: 10,
+        createdAt: new Date()
+      });
+
+      document.getElementById("balance").innerText = "10";
+    } else {
+      // 👤 Existing user
+      document.getElementById("balance").innerText =
+        snap.data().balance;
+    }
+
+    document.getElementById("name").innerText =
+      "Name: " + user.displayName;
+    document.getElementById("email").innerText =
+      "Email: " + user.email;
   });
+
+  // 🚀 ENTER APP
+  document.getElementById("enterAppBtn").onclick = () => {
+    window.location.href = "spin.html";
+  };
 
   // 🚪 LOGOUT
   document.getElementById("logoutBtn").onclick = () => {
