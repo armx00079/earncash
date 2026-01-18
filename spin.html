@@ -2,76 +2,106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RozanaCash – Spin & Earn</title>
+<title>RozanaCash Spin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#f2f2f2;
+  background:#f4f4f4;
   text-align:center;
 }
 
 .header{
-  background:#5a189a;
+  background:#5b1aa8;
   color:white;
   padding:15px;
-  font-size:20px;
+  font-size:22px;
+  font-weight:bold;
 }
 
-.wallet-box{
-  background:#5a189a;
+.box{
+  background:#6a1bb1;
   color:white;
   margin:15px;
-  border-radius:12px;
   padding:15px;
+  border-radius:12px;
   display:flex;
   justify-content:space-around;
 }
 
-#wheel{
+#wheel-container{
+  position:relative;
   width:280px;
   height:280px;
-  border-radius:50%;
-  border:12px solid #4a148c;
-  background:conic-gradient(
-    #7b2cbf 0deg 45deg,
-    #9d4edd 45deg 90deg,
-    #5a189a 90deg 135deg,
-    #7b2cbf 135deg 180deg,
-    #9d4edd 180deg 225deg,
-    #5a189a 225deg 270deg,
-    #7b2cbf 270deg 315deg,
-    #9d4edd 315deg 360deg
-  );
   margin:30px auto;
+}
+
+#wheel{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:conic-gradient(
+    #8e24aa 0deg 45deg,
+    #7b1fa2 45deg 90deg,
+    #9c27b0 90deg 135deg,
+    #6a1bb1 135deg 180deg,
+    #8e24aa 180deg 225deg,
+    #7b1fa2 225deg 270deg,
+    #9c27b0 270deg 315deg,
+    #6a1bb1 315deg 360deg
+  );
   transition:transform 4s ease-out;
 }
 
-.pointer{
+#pointer{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
   width:0;
   height:0;
   border-left:12px solid transparent;
   border-right:12px solid transparent;
   border-bottom:20px solid red;
-  margin:auto;
+}
+
+#labels{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+
+.label{
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  font-weight:bold;
+  color:white;
 }
 
 button{
-  padding:12px 30px;
-  background:#7b2cbf;
+  background:#7b1fa2;
   color:white;
   border:none;
-  border-radius:20px;
+  padding:12px 25px;
   font-size:18px;
+  border-radius:20px;
   cursor:pointer;
 }
 
 a{
   display:block;
   margin-top:15px;
-  color:#5a189a;
+  color:#6a1bb1;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -80,34 +110,25 @@ a{
 
 <div class="header">RozanaCash</div>
 
-<div class="wallet-box">
-  <div>Wallet<br>₹ <span id="balance">0</span></div>
+<div class="box">
+  <div>Wallet<br>₹ <span id="wallet">0</span></div>
   <div>Winning<br>₹ <span id="winning">0</span></div>
 </div>
 
-<div class="pointer"></div>
-<div id="wheel"></div>
+<div id="wheel-container">
+  <div id="pointer"></div>
+  <div id="wheel"></div>
+  <div id="labels"></div>
+</div>
 
 <button id="spinBtn">SPIN</button>
-
 <a href="dashboard.html">← Back to Dashboard</a>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc,
-  increment
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// 🔥 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
   authDomain: "earncash7-f0ecc.firebaseapp.com",
@@ -119,50 +140,50 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const rewards = [10,20,60,0,40,100,-20,150];
-const wheel = document.getElementById("wheel");
-const spinBtn = document.getElementById("spinBtn");
+const rewards = [10, 20, 60, 100, -20, 30, 150, 40];
 
-let userRef;
-let spinning = false;
+const labelsDiv = document.getElementById("labels");
+labelsDiv.innerHTML = "";
 
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    window.location.href="index.html";
-    return;
-  }
-
-  userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-
-  if(snap.exists()){
-    document.getElementById("balance").innerText = snap.data().balance;
-    document.getElementById("winning").innerText = snap.data().totalEarned;
-  }
+rewards.forEach((val,i)=>{
+  const d = document.createElement("div");
+  d.className="label";
+  d.style.transform=`rotate(${i*45}deg)`;
+  d.innerHTML=`<span style="margin-top:15px;transform:rotate(-${i*45}deg)">${val}</span>`;
+  labelsDiv.appendChild(d);
 });
 
-spinBtn.onclick = async ()=>{
-  if(spinning) return;
-  spinning = true;
+let userRef;
 
-  const reward = rewards[Math.floor(Math.random()*rewards.length)];
-  const degree = 360*5 + Math.floor(Math.random()*360);
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href="index.html";
+    return;
+  }
+  userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+  document.getElementById("wallet").innerText = snap.data().balance;
+  document.getElementById("winning").innerText = snap.data().totalEarned;
+});
 
-  wheel.style.transform = `rotate(${degree}deg)`;
+document.getElementById("spinBtn").onclick = async()=>{
+  const index = Math.floor(Math.random()*rewards.length);
+  const reward = rewards[index];
+  const rotate = 360*4 + index*45;
+  wheel.style.transform = `rotate(${rotate}deg)`;
 
-  setTimeout(async ()=>{
+  setTimeout(async()=>{
     await updateDoc(userRef,{
       balance: increment(reward),
       totalEarned: increment(reward)
     });
 
     const snap = await getDoc(userRef);
-    document.getElementById("balance").innerText = snap.data().balance;
-    document.getElementById("winning").innerText = snap.data().totalEarned;
+    wallet.innerText = snap.data().balance;
+    winning.innerText = snap.data().totalEarned;
 
-    alert("🎉 You got: "+reward+" coins");
-    spinning = false;
-  },4000);
+    alert("You got ₹"+reward);
+  },4200);
 };
 </script>
 
