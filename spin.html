@@ -119,7 +119,7 @@ canvas{margin-top:10px}
   <button onclick="alert('Profile coming soon')">👤 Profile</button>
 </div>
 
-<!-- 🎉 RESULT POPUP -->
+<!-- RESULT POPUP -->
 <div id="resultPopup">
   <div id="resultBox">
     <h2 id="resultAmount" style="color:#5e239d;margin:0">₹0</h2>
@@ -145,6 +145,25 @@ const db=getFirestore(app);
 const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
 const spinCost=20;
+
+/* 🧠 OWNER SAFE REWARDS */
+const rewards=[
+ {value:-60, weight:35},
+ {value:-20, weight:25},
+ {value:20,  weight:18},
+ {value:40,  weight:10},
+ {value:60,  weight:6},
+ {value:100, weight:4},
+ {value:150, weight:2}
+];
+
+function getSafeReward(){
+ let bag=[];
+ rewards.forEach(r=>{
+  for(let i=0;i<r.weight;i++) bag.push(r.value);
+ });
+ return bag[Math.floor(Math.random()*bag.length)];
+}
 
 const canvas=document.getElementById("wheel");
 const ctx=canvas.getContext("2d");
@@ -189,14 +208,11 @@ spinBtn.onclick=async()=>{
   return;
  }
 
- const arc=360/slices.length;
  const spins=5;
  const randomDeg=Math.floor(Math.random()*360);
  const rotateTo=spins*360+randomDeg;
 
- const fixedDeg=(360-(randomDeg+270)%360)%360;
- const index=Math.floor(fixedDeg/arc);
- const reward=slices[index];
+ const reward=getSafeReward();
 
  canvas.style.transition="transform 4s ease-out";
  canvas.style.transform=`rotate(${rotateTo}deg)`;
@@ -211,14 +227,9 @@ spinBtn.onclick=async()=>{
   wallet.innerText=s.data().balance;
   winning.innerText=s.data().totalEarned;
 
-  // 🎉 SHOW RESULT POPUP
   document.getElementById("resultAmount").innerText="₹"+reward;
   document.getElementById("resultPopup").style.display="flex";
-
-  setTimeout(()=>{
-    document.getElementById("resultPopup").style.display="none";
-  },2000);
-
+  setTimeout(()=>resultPopup.style.display="none",2000);
  },4000);
 };
 
