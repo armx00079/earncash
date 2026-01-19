@@ -57,6 +57,21 @@ canvas{margin-top:10px}
  </div>
 </div>
 
+<!-- 🔔 LIVE WIN NOTIFICATION (ADDED) -->
+<div id="liveWin" style="
+ margin:0 15px;
+ background:#fff;
+ border-radius:14px;
+ padding:12px;
+ font-weight:bold;
+ color:#5e239d;
+ box-shadow:0 4px 10px rgba(0,0,0,0.12);
+ text-align:center;
+ transition:0.4s;
+">
+ 👤 User123 won ₹40 <span style="color:gray;font-size:12px">Just now</span>
+</div>
+
 <div class="wheel-box">
  <canvas id="wheel" width="300" height="300"></canvas><br>
  <button class="spin-btn" id="spinBtn">SPIN</button>
@@ -65,7 +80,6 @@ canvas{margin-top:10px}
   <a href="dashboard.html">← Back to Dashboard</a>
  </div>
 
- <!-- 🏆 LEADERBOARD BUTTON -->
  <button class="spin-btn" id="leaderboardBtn" style="background:#fff;color:#5e239d;margin-top:10px">
   🏆 Today’s Winners
  </button>
@@ -133,7 +147,6 @@ const ctx=canvas.getContext("2d");
 const cx=150,cy=150,radius=140;
 let userRef;
 
-// 🎡 Wheel UI
 const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
 
@@ -160,7 +173,6 @@ function drawWheel(){
 }
 drawWheel();
 
-// 🔥 ADMIN CONTROL
 async function getSpinControl(){
  const snap=await getDoc(doc(db,"admin","spinControl"));
  return snap.data();
@@ -245,36 +257,23 @@ window.deposit=()=>location.href="deposit.html";
 window.withdraw=()=>location.href="withdraw.html";
 </script>
 
-<!-- 🏆 FAKE LEADERBOARD SCRIPT -->
 <script>
-const fakeUsers=["User4821","User7784","User1290","User8842","User3001","User6590","User9102","User4420"];
+// 🔔 LIVE WIN AUTO NOTIFICATION
+const liveWin=document.getElementById("liveWin");
+const users=["User4821","User7784","User1290","User8842","User3001","User6590"];
+const amounts=[20,40,60,100,150,200];
+const times=["Just now","1 min ago","2 min ago","5 min ago"];
 
-function randAmt(){return Math.floor(Math.random()*1000)+200;}
-function randTime(){
- const t=["Just now","1 min ago","2 min ago","5 min ago"];
- return t[Math.floor(Math.random()*t.length)];
+function updateLive(){
+ liveWin.style.opacity=0;
+ setTimeout(()=>{
+  liveWin.innerHTML=`👤 <b>${users[Math.floor(Math.random()*users.length)]}</b>
+  won ₹<b>${amounts[Math.floor(Math.random()*amounts.length)]}</b>
+  <span style="color:gray;font-size:12px">${times[Math.floor(Math.random()*times.length)]}</span>`;
+  liveWin.style.opacity=1;
+ },300);
 }
-
-function loadLeaderboard(){
- leaderboardList.innerHTML="";
- for(let i=0;i<5;i++){
-  leaderboardList.innerHTML+=`
-   <p style="margin:6px 0">
-    👤 <b>${fakeUsers[Math.floor(Math.random()*fakeUsers.length)]}</b>
-    — ₹${randAmt()}
-    <span style="float:right;color:gray;font-size:12px">${randTime()}</span>
-   </p>`;
- }
-}
-
-leaderboardBtn.onclick=()=>{
- leaderboard.style.display="flex";
- loadLeaderboard();
-};
-
-setInterval(()=>{
- if(leaderboard.style.display==="flex") loadLeaderboard();
-},5000);
+setInterval(updateLive,5000);
 </script>
 
 </body>
