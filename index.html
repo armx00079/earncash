@@ -41,10 +41,13 @@
     import {
       getAuth,
       GoogleAuthProvider,
-      signInWithPopup
+      signInWithPopup,
+      setPersistence,
+      browserLocalPersistence,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 🔥 FIREBASE CONFIG (tumhara real)
+    // 🔥 FIREBASE CONFIG (same as yours)
     const firebaseConfig = {
       apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
       authDomain: "earncash7-f0ecc.firebaseapp.com",
@@ -57,16 +60,24 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
+    // ✅ IMPORTANT FIX: Persist login properly (loop yahin se fix hota hai)
+    await setPersistence(auth, browserLocalPersistence);
+
+    // ✅ If already logged in → direct dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.replace("dashboard.html");
+      }
+    });
+
     // Button click
-    document.getElementById("googleBtn").addEventListener("click", () => {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          // ✅ LOGIN SUCCESS
-          window.location.href = "dashboard.html";
-        })
-        .catch((error) => {
-          alert("Login Error ❌\n\n" + error.message);
-        });
+    document.getElementById("googleBtn").addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        window.location.replace("dashboard.html");
+      } catch (error) {
+        alert("Login Error ❌\n\n" + error.message);
+      }
     });
   </script>
 
