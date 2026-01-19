@@ -26,14 +26,8 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    p {
-      margin: 6px 0;
-      font-size: 15px;
-    }
+    h2 { margin-bottom: 10px; }
+    p { margin: 6px 0; font-size: 15px; }
 
     .balance {
       font-size: 20px;
@@ -71,28 +65,13 @@
     Balance: <span id="balance">0</span> Coins
   </div>
 
-  <!-- 🚀 ENTER APP -->
-  <button class="btn enter" id="enterAppBtn">
-    Enter App 🚀
-  </button>
-
-  <!-- 👤 PROFILE -->
-  <button class="btn profile" onclick="location.href='profile.html'">
-    Profile 👤
-  </button>
-
-  <!-- 💸 WITHDRAW -->
-  <button class="btn withdraw" id="withdrawBtn">
-    Withdraw 💰
-  </button>
-
-  <!-- 🚪 LOGOUT -->
-  <button class="btn logout" id="logoutBtn">
-    Logout
-  </button>
+  <button class="btn enter" id="enterAppBtn">Enter App 🚀</button>
+  <button class="btn profile" onclick="location.href='profile.html'">Profile 👤</button>
+  <button class="btn withdraw" id="withdrawBtn">Withdraw 💰</button>
+  <button class="btn logout" id="logoutBtn">Logout</button>
 </div>
 
-<!-- 📧 EMAIL CUSTOMER SUPPORT FLOATING BUTTON -->
+<!-- 📧 EMAIL SUPPORT -->
 <a href="mailto:rozanacash01@gmail.com
 ?subject=RozanaCash%20Support
 &body=Hello%20RozanaCash%20Support%2C%0A%0APlease%20describe%20your%20issue%20below%3A"
@@ -111,55 +90,56 @@ justify-content:center;
 box-shadow:0 4px 10px rgba(0,0,0,0.3);
 text-decoration:none;
 ">
-<img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png"
-     width="28">
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" width="28">
 </a>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-    authDomain: "earncash7-f0ecc.firebaseapp.com",
-    projectId: "earncash7-f0ecc",
-    appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain: "earncash7-f0ecc.firebaseapp.com",
+  projectId: "earncash7-f0ecc",
+  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      location.href = "index.html";
-      return;
-    }
+// 🔐 AUTH GUARD (FINAL FIX)
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.replace("index.html"); // ⛔ back-loop fix
+    return;
+  }
 
-    const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef);
 
-    if (!snap.exists()) {
-      await setDoc(userRef, {
-        name: user.displayName,
-        email: user.email,
-        balance: 10,
-        totalEarned: 10,
-        createdAt: new Date()
-      });
-      balance.innerText = "10";
-    } else {
-      balance.innerText = snap.data().balance;
-    }
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      name: user.displayName,
+      email: user.email,
+      balance: 10,
+      totalEarned: 10,
+      createdAt: new Date()
+    });
+    balance.innerText = "10";
+  } else {
+    balance.innerText = snap.data().balance;
+  }
 
-    name.innerText = "Name: " + user.displayName;
-    email.innerText = "Email: " + user.email;
-  });
+  name.innerText = "Name: " + user.displayName;
+  email.innerText = "Email: " + user.email;
+});
 
-  enterAppBtn.onclick = () => location.href = "spin.html";
-  withdrawBtn.onclick = () => location.href = "withdraw.html";
-  logoutBtn.onclick = () => signOut(auth).then(()=>location.href="index.html");
+enterAppBtn.onclick = () => location.href = "spin.html";
+withdrawBtn.onclick = () => location.href = "withdraw.html";
+logoutBtn.onclick = () =>
+  signOut(auth).then(() => window.location.replace("index.html"));
 </script>
 
 </body>
