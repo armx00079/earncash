@@ -13,12 +13,14 @@ body{margin:0;font-family:Arial;background:#f3f3f3;}
 .input{width:100%;padding:14px;margin:10px 0;border-radius:30px;border:1px solid #ccc;font-size:16px;}
 .btn{width:100%;background:#5e239d;color:white;padding:14px;border:none;border-radius:30px;font-size:18px;margin-top:10px;}
 .note{font-size:14px;margin-top:8px;color:#444;}
-.rules{
- margin:15px;background:#f9f9f9;border-radius:14px;
- padding:15px;font-size:14px;line-height:1.6;color:#555;
-}
+.rules{margin:15px;background:#f9f9f9;border-radius:14px;padding:15px;font-size:14px;line-height:1.6;color:#555;}
 .rules div{margin-top:6px;}
 .rules span{color:red;}
+
+/* 🔹 NEW */
+.tabs{display:flex;gap:10px;margin-bottom:10px;}
+.tab{flex:1;padding:12px;border:none;border-radius:20px;font-weight:bold;background:#eee;}
+.tab.active{background:#5e239d;color:white;}
 </style>
 </head>
 
@@ -32,52 +34,59 @@ body{margin:0;font-family:Arial;background:#f3f3f3;}
 </div>
 
 <div class="box">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/UPI-Logo.png" width="80"><br><br>
 
-  <input class="input" id="upi" placeholder="Enter UPI ID">
-  <input class="input" id="amount" type="number" placeholder="Enter Amount">
+  <!-- 🔹 NEW TABS -->
+  <div class="tabs">
+    <button class="tab active" id="upiTab">UPI</button>
+    <button class="tab" id="bankTab">BANK</button>
+  </div>
+
+  <!-- ================= UPI FORM (OLD – UNTOUCHED) ================= -->
+  <div id="upiForm">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/UPI-Logo.png" width="80"><br><br>
+    <input class="input" id="upi" placeholder="Enter UPI ID">
+    <input class="input" id="amount" type="number" placeholder="Enter Amount">
+  </div>
+
+  <!-- ================= BANK FORM (NEW) ================= -->
+  <div id="bankForm" style="display:none">
+    <input class="input" id="accName" placeholder="Account Holder Name">
+    <input class="input" id="accNo" placeholder="Account Number">
+    <input class="input" id="ifsc" placeholder="IFSC Code">
+    <input class="input" id="bankName" placeholder="Bank Name">
+    <input class="input" id="bankAmount" type="number" placeholder="Enter Amount">
+  </div>
 
   <div class="note">Minimum withdraw ₹1000</div>
-
   <button class="btn" id="withdrawBtn">Withdraw</button>
 </div>
 
-<!-- 🔴 WITHDRAW RULES UI -->
+<!-- RULES (OLD) -->
 <div class="rules">
   <div>🔴 <b>Withdraw time</b> <span>00:05 - 23:55</span></div>
   <div>🔴 <b>In-day Remaining Withdrawal Times</b> <span id="remainTimes">3</span></div>
-  <div>🔴 <b>Withdrawal amount range</b> <span>₹1,000.00 – ₹50,000.00</span></div>
-  <div>🔴 Please confirm your beneficial account information before withdrawing.
-    If your information is incorrect, our company will not be liable for the amount of loss.
-  </div>
-  <div>🔴 If your beneficial information is incorrect, please contact customer service.</div>
+  <div>🔴 <b>Withdrawal amount range</b> <span>₹1,000 – ₹50,000</span></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  addDoc, 
-  collection, 
-  updateDoc, 
-  increment 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, addDoc, collection, updateDoc, increment }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain: "earncash7-f0ecc.firebaseapp.com",
-  projectId: "earncash7-f0ecc",
-  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+const firebaseConfig={
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+ authDomain:"earncash7-f0ecc.firebaseapp.com",
+ projectId:"earncash7-f0ecc",
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
 let userRef, withdrawControl;
+let mode="UPI"; // 🔹 NEW
 
 function today(){
  const d=new Date();
@@ -85,81 +94,48 @@ function today(){
 }
 
 onAuthStateChanged(auth, async(user)=>{
-  if(!user){ location.href="index.html"; return; }
+ if(!user){location.href="index.html";return;}
+ userRef=doc(db,"users",user.uid);
+ const snap=await getDoc(userRef);
+ wallet.innerText=snap.data().balance;
+ winning.innerText=snap.data().totalEarned;
 
-  userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-  wallet.innerText = snap.data().balance;
-  winning.innerText = snap.data().totalEarned;
+ const cSnap=await getDoc(doc(db,"admin","withdrawControl"));
+ withdrawControl=cSnap.data();
 
-  // 🔥 fetch withdraw control
-  const cSnap = await getDoc(doc(db,"admin","withdrawControl"));
-  withdrawControl = cSnap.data();
-
-  // show remaining times
-  const userData = snap.data();
-  const t = today();
-  let count = userData.withdrawCount || 0;
-  let last = userData.lastWithdrawDate || "";
-  if(last !== t) count = 0;
-  remainTimes.innerText = withdrawControl.dailyLimit - count;
+ let count=snap.data().withdrawCount||0;
+ let last=snap.data().lastWithdrawDate||"";
+ if(last!==today()) count=0;
+ remainTimes.innerText=withdrawControl.dailyLimit-count;
 });
 
-withdrawBtn.onclick = async()=>{
-  const upiId = upi.value.trim();
-  const amt = Number(amount.value);
+// 🔹 TAB SWITCH
+upiTab.onclick=()=>{mode="UPI";upiForm.style.display="block";bankForm.style.display="none";upiTab.classList.add("active");bankTab.classList.remove("active");};
+bankTab.onclick=()=>{mode="BANK";upiForm.style.display="none";bankForm.style.display="block";bankTab.classList.add("active");upiTab.classList.remove("active");};
 
-  if(!upiId) return alert("❌ Enter UPI ID");
+withdrawBtn.onclick=async()=>{
+ const snap=await getDoc(userRef);
+ let user=snap.data();
 
-  const min = withdrawControl.minWithdraw;
-  const max = withdrawControl.maxWithdraw;
-  const limit = withdrawControl.dailyLimit;
+ let amt = mode==="UPI"?Number(amount.value):Number(bankAmount.value);
+ if(!amt || amt<withdrawControl.minWithdraw) return alert("❌ Invalid amount");
+ if(user.totalEarned<amt) return alert("❌ Insufficient winning");
 
-  if(!amt || amt < min || amt > max){
-    alert(`❌ Withdrawal amount must be between ₹${min} and ₹${max}`);
-    return;
-  }
+ let data={method:mode,amount:amt,status:"Pending",uid:auth.currentUser.uid,email:auth.currentUser.email,createdAt:new Date()};
 
-  const snap = await getDoc(userRef);
-  let user = snap.data();
+ if(mode==="UPI"){
+  if(!upi.value) return alert("Enter UPI ID");
+  data.upi=upi.value;
+ }else{
+  if(!accNo.value||!ifsc.value) return alert("Enter bank details");
+  data.bank={name:accName.value,acc:accNo.value,ifsc:ifsc.value,bank:bankName.value};
+ }
 
-  if(user.totalEarned < amt){
-    alert("❌ Insufficient winning");
-    return;
-  }
+ await addDoc(collection(db,"withdrawRequests"),data);
+ await updateDoc(userRef,{totalEarned:increment(-amt),withdrawCount:increment(1),lastWithdrawDate:today()});
 
-  const t = today();
-  let count = user.withdrawCount || 0;
-  let last = user.lastWithdrawDate || "";
-
-  if(last !== t){
-    count = 0;
-    await updateDoc(userRef,{ withdrawCount:0, lastWithdrawDate:t });
-  }
-
-  if(count >= limit){
-    alert("❌ Daily withdrawal limit reached (3 times)");
-    return;
-  }
-
-  // ✅ submit request
-  await addDoc(collection(db,"withdrawRequests"),{
-    uid: auth.currentUser.uid,
-    email: auth.currentUser.email,
-    upi: upiId,
-    amount: amt,
-    status: "Pending",
-    createdAt: new Date()
-  });
-
-  await updateDoc(userRef,{
-    totalEarned: increment(-amt),
-    withdrawCount: increment(1),
-    lastWithdrawDate: t
-  });
-
-  alert("✅ Withdraw request submitted");
-  location.reload();
+ alert("✅ Withdraw request submitted");
+ location.reload();
 };
 </script>
 
