@@ -113,10 +113,11 @@ canvas{margin-top:10px}
   </div>
 </div>
 
+<!-- 🔽 BOTTOM NAV (FIXED PROFILE BUTTON) -->
 <div class="bottom-nav">
   <button onclick="location.href='dashboard.html'">🏠 Home</button>
   <button onclick="location.href='history.html'">📜 History</button>
-  <button onclick="alert('Profile coming soon')">👤 Profile</button>
+  <button onclick="location.href='profile.html'">👤 Profile</button>
 </div>
 
 <div id="resultPopup">
@@ -145,7 +146,6 @@ const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
 const spinCost=20;
 
-/* OWNER SAFE */
 const rewards=[
  {value:-60, weight:35},
  {value:-20, weight:25},
@@ -155,6 +155,7 @@ const rewards=[
  {value:100, weight:4},
  {value:150, weight:2}
 ];
+
 function getSafeReward(){
  let bag=[];
  rewards.forEach(r=>{
@@ -211,7 +212,6 @@ spinBtn.onclick=async()=>{
  const rotateTo=spins*360+randomDeg;
  const reward=getSafeReward();
 
- /* 🔁 RESET FIX (IMPORTANT) */
  canvas.style.transition="none";
  canvas.style.transform="rotate(0deg)";
 
