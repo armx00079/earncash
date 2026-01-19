@@ -127,10 +127,15 @@ function drawWheel(){
 }
 drawWheel();
 
-// 🔥 ADMIN CONTROL FETCH
+// 🔥 ADMIN CONTROL
 async function getSpinControl(){
  const snap=await getDoc(doc(db,"admin","spinControl"));
  return snap.data();
+}
+
+function todayDate(){
+ const d=new Date();
+ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
 onAuthStateChanged(auth,async user=>{
@@ -146,23 +151,37 @@ spinBtn.onclick=async()=>{
  const spinCost=control.spinCost;
  const winPercent=control.winPercent;
  const maxWin=control.maxWin;
+ const dailyUserMaxWin=control.dailyUserMaxWin;
 
  const snap=await getDoc(userRef);
- if(snap.data().balance < spinCost){
+ let user=snap.data();
+
+ if(user.balance < spinCost){
   alert("❌ Minimum "+spinCost+" coins required");
   return;
  }
 
- // 🎯 WIN / LOSS decision
+ const today=todayDate();
+ let dailyWin=user.dailyWin||0;
+ let lastWinDate=user.lastWinDate||"";
+
+ if(lastWinDate!==today){
+  dailyWin=0;
+  await updateDoc(userRef,{dailyWin:0,lastWinDate:today});
+ }
+
  let reward=0;
  const chance=Math.random()*100;
- if(chance < winPercent){
+
+ if(chance < winPercent && dailyWin < dailyUserMaxWin){
   reward=Math.floor(Math.random()*(maxWin-10+1))+10;
+  if(dailyWin+reward > dailyUserMaxWin){
+   reward=dailyUserMaxWin-dailyWin;
+  }
  }else{
   reward=-spinCost;
  }
 
- // 🎡 animation
  const spins=5;
  const rotateTo=spins*360+Math.floor(Math.random()*360);
  canvas.style.transition="none";
@@ -174,7 +193,9 @@ spinBtn.onclick=async()=>{
 
  await updateDoc(userRef,{
   balance:increment(-spinCost+reward),
-  totalEarned:increment(reward>0?reward:0)
+  totalEarned:increment(reward>0?reward:0),
+  dailyWin:increment(reward>0?reward:0),
+  lastWinDate:today
  });
 
  setTimeout(async()=>{
