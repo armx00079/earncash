@@ -60,9 +60,15 @@ canvas{margin-top:10px}
 <div class="wheel-box">
  <canvas id="wheel" width="300" height="300"></canvas><br>
  <button class="spin-btn" id="spinBtn">SPIN</button>
+
  <div class="back">
   <a href="dashboard.html">← Back to Dashboard</a>
  </div>
+
+ <!-- 🏆 LEADERBOARD BUTTON -->
+ <button class="spin-btn" id="leaderboardBtn" style="background:#fff;color:#5e239d;margin-top:10px">
+  🏆 Today’s Winners
+ </button>
 </div>
 
 <div class="bottom-nav">
@@ -75,6 +81,33 @@ canvas{margin-top:10px}
  <div id="resultBox">
   <h2 id="resultAmount" style="color:#5e239d;margin:0">₹0</h2>
   <p style="margin-top:10px;font-weight:bold">Spin Result</p>
+ </div>
+</div>
+
+<!-- 🏆 LEADERBOARD POPUP -->
+<div id="leaderboard" style="
+display:none;
+position:fixed;
+top:0;left:0;right:0;bottom:0;
+background:rgba(0,0,0,0.6);
+z-index:1000;
+justify-content:center;
+align-items:center;
+">
+ <div style="
+ background:white;
+ width:90%;
+ max-width:320px;
+ border-radius:16px;
+ padding:20px;
+ ">
+  <h3 style="margin:0 0 10px;color:#5e239d">🏆 Today’s Winners</h3>
+  <div id="leaderboardList"></div>
+
+  <button onclick="leaderboard.style.display='none'"
+  style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:10px;background:#5e239d;color:white">
+   Close
+  </button>
  </div>
 </div>
 
@@ -210,6 +243,38 @@ spinBtn.onclick=async()=>{
 
 window.deposit=()=>location.href="deposit.html";
 window.withdraw=()=>location.href="withdraw.html";
+</script>
+
+<!-- 🏆 FAKE LEADERBOARD SCRIPT -->
+<script>
+const fakeUsers=["User4821","User7784","User1290","User8842","User3001","User6590","User9102","User4420"];
+
+function randAmt(){return Math.floor(Math.random()*1000)+200;}
+function randTime(){
+ const t=["Just now","1 min ago","2 min ago","5 min ago"];
+ return t[Math.floor(Math.random()*t.length)];
+}
+
+function loadLeaderboard(){
+ leaderboardList.innerHTML="";
+ for(let i=0;i<5;i++){
+  leaderboardList.innerHTML+=`
+   <p style="margin:6px 0">
+    👤 <b>${fakeUsers[Math.floor(Math.random()*fakeUsers.length)]}</b>
+    — ₹${randAmt()}
+    <span style="float:right;color:gray;font-size:12px">${randTime()}</span>
+   </p>`;
+ }
+}
+
+leaderboardBtn.onclick=()=>{
+ leaderboard.style.display="flex";
+ loadLeaderboard();
+};
+
+setInterval(()=>{
+ if(leaderboard.style.display==="flex") loadLeaderboard();
+},5000);
 </script>
 
 </body>
