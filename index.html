@@ -34,41 +34,50 @@
 
 <body>
 
-  <button id="googleBtn">Sign in with Google</button>
+<button id="googleBtn">Sign in with Google</button>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 🔥 FIREBASE CONFIG (tumhara real)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-      authDomain: "earncash7-f0ecc.firebaseapp.com",
-      projectId: "earncash7-f0ecc",
-      appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+  authDomain: "earncash7-f0ecc.firebaseapp.com",
+  projectId: "earncash7-f0ecc",
+  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-    // Button click
-    document.getElementById("googleBtn").addEventListener("click", () => {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          // ✅ LOGIN SUCCESS
-          window.location.href = "dashboard.html";
-        })
-        .catch((error) => {
-          alert("Login Error ❌\n\n" + error.message);
-        });
-    });
-  </script>
+// 🔐 VERY IMPORTANT (AUTH MEMORY FIX)
+await setPersistence(auth, browserLocalPersistence);
+
+// 👀 Agar already logged in hai → dashboard
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.replace("dashboard.html");
+  }
+});
+
+// 👉 Login button
+document.getElementById("googleBtn").onclick = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+    // redirect auth listener karega
+  } catch (e) {
+    alert("Login Error ❌\n\n" + e.message);
+  }
+};
+</script>
 
 </body>
 </html>
