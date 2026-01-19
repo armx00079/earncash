@@ -1,124 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>My History</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{margin:0;font-family:Arial;background:#f3f3f3}
-.header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}
-.card{background:#fff;margin:15px;border-radius:12px;padding:15px}
-.item{border-bottom:1px solid #eee;padding:8px 0}
-.status{font-size:13px}
-.pending{color:orange}
-.approved{color:green}
-.rejected{color:red}
-.time{font-size:12px;color:#666}
-.back{margin:20px;background:#e53935;color:#fff;border:none;
-width:calc(100% - 40px);padding:14px;border-radius:30px;font-size:18px}
-</style>
-</head>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<title>My History</title>  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<style>  
+body{margin:0;font-family:Arial;background:#f3f3f3}  
+.header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}  
+.card{background:#fff;margin:15px;border-radius:12px;padding:15px}  
+.item{border-bottom:1px solid #eee;padding:8px 0}  
+.status{font-size:13px}  
+.pending{color:orange}  
+.approved{color:green}  
+.rejected{color:red}  
+.back{margin:20px;background:#e53935;color:#fff;border:none;  
+width:calc(100% - 40px);padding:14px;border-radius:30px;font-size:18px}  
+</style>  
+</head>  <body>  <div class="header">📜 My History</div>  <div class="card">  
+  <h3>💰 Deposit History</h3>  
+  <div id="depositList">No deposits</div>  
+</div>  <div class="card">  
+  <h3>🏧 Withdrawal History</h3>  
+  <div id="withdrawList">No withdrawals</div>  
+</div>  <button class="back" onclick="history.back()">← Back</button>
 
-<body>
-
-<div class="header">📜 My History</div>
-
-<div class="card">
-  <h3>💰 Deposit History</h3>
-  <div id="depositList">No deposits</div>
-</div>
-
-<div class="card">
-  <h3>🏧 Withdrawal History</h3>
-  <div id="withdrawList">No withdrawals</div>
-</div>
-
-<button class="back" onclick="history.back()">← Back</button>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,collection,query,where,getDocs,orderBy } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig={
- apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
- authDomain:"earncash7-f0ecc.firebaseapp.com",
- projectId:"earncash7-f0ecc",
- appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
-
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-// 🔹 TIME FORMATTER
-function formatTime(ts){
-  if(!ts) return "";
-  const d = ts.toDate();
-  return d.toLocaleString("en-IN",{
-    day:"2-digit",
-    month:"short",
-    year:"numeric",
-    hour:"2-digit",
-    minute:"2-digit",
-    hour12:true
-  });
-}
-
-onAuthStateChanged(auth, async user=>{
- if(!user){
-   location.href="index.html";
-   return;
- }
-
- // 🔹 DEPOSITS
- const depQ=query(
-   collection(db,"payments"),
-   where("uid","==",user.uid),
-   orderBy("createdAt","desc")
- );
- const depSnap=await getDocs(depQ);
-
- depositList.innerHTML="";
- if(depSnap.empty){
-   depositList.innerHTML="No deposits found";
- }else{
-   depSnap.forEach(d=>{
-     const x=d.data();
-     depositList.innerHTML+=`
-       <div class="item">
-        ₹${x.amount} | Spins: ${x.spins}<br>
-        <span class="time">${formatTime(x.createdAt)}</span><br>
-        <span class="status ${x.status}">${x.status}</span>
-       </div>`;
-   });
- }
-
- // 🔹 WITHDRAWALS
- const witQ=query(
-   collection(db,"withdrawRequests"),
-   where("uid","==",user.uid),
-   orderBy("createdAt","desc")
- );
- const witSnap=await getDocs(witQ);
-
- withdrawList.innerHTML="";
- if(witSnap.empty){
-   withdrawList.innerHTML="No withdrawals found";
- }else{
-   witSnap.forEach(d=>{
-     const x=d.data();
-     withdrawList.innerHTML+=`
-       <div class="item">
-        ₹${x.amount} | ${x.upi}<br>
-        <span class="time">${formatTime(x.createdAt)}</span><br>
-        <span class="status ${x.status}">${x.status}</span>
-       </div>`;
-   });
- }
-});
-</script>
-
-</body>
+<script type="module">  
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";  
+import { getFirestore,collection,query,where,getDocs,orderBy }   
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
+  
+const firebaseConfig={  
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",  
+ authDomain:"earncash7-f0ecc.firebaseapp.com",  
+ projectId:"earncash7-f0ecc",  
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"  
+};  
+  
+const app=initializeApp(firebaseConfig);  
+const auth=getAuth(app);  
+const db=getFirestore(app);  
+  
+onAuthStateChanged(auth, async user=>{  
+ if(!user){  
+   location.href="index.html";  
+   return;  
+ }  
+  
+ // 🔹 DEPOSITS  
+ const depQ=query(  
+   collection(db,"payments"),  
+   where("uid","==",user.uid)  
+ );  
+ const depSnap=await getDocs(depQ);  
+  
+ depositList.innerHTML="";  
+ if(depSnap.empty){  
+   depositList.innerHTML="No deposits found";  
+ }else{  
+   depSnap.forEach(d=>{  
+     const x=d.data();  
+     depositList.innerHTML+=`  
+       <div class="item">  
+        ₹${x.amount} | Spins: ${x.spins}<br>  
+        <span class="status ${x.status}">${x.status}</span>  
+       </div>`;  
+   });  
+ }  
+  
+ // 🔹 WITHDRAWALS  
+ const witQ=query(  
+   collection(db,"withdrawRequests"),  
+   where("uid","==",user.uid)  
+ );  
+ const witSnap=await getDocs(witQ);  
+  
+ withdrawList.innerHTML="";  
+ if(witSnap.empty){  
+   withdrawList.innerHTML="No withdrawals found";  
+ }else{  
+   witSnap.forEach(d=>{  
+     const x=d.data();  
+     withdrawList.innerHTML+=`  
+       <div class="item">  
+        ₹${x.amount} | ${x.upi}<br>  
+        <span class="status ${x.status}">${x.status}</span>  
+       </div>`;  
+   });  
+ }  
+});  
+</script>  </body>  
 </html>
