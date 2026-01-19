@@ -1,74 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>EarnCash Google Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>RozanaCash Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f2f2f2;
-      font-family: Arial, sans-serif;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  height:100vh;
+  background:linear-gradient(135deg,#5e239d,#8e44ad);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 
-    button {
-      padding: 16px 28px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      background: #4285F4;
-      color: #fff;
-      cursor: pointer;
-    }
+.card{
+  background:#fff;
+  width:90%;
+  max-width:360px;
+  border-radius:18px;
+  padding:30px 25px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
 
-    button:hover {
-      background: #357ae8;
-    }
-  </style>
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:#5e239d;
+  margin-bottom:5px;
+}
+
+.tagline{
+  font-size:14px;
+  color:#777;
+  margin-bottom:25px;
+}
+
+.google-btn{
+  background:#4285F4;
+  color:white;
+  border:none;
+  width:100%;
+  padding:14px;
+  border-radius:30px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+.google-btn img{
+  width:22px;
+  background:white;
+  border-radius:50%;
+  padding:2px;
+}
+
+.note{
+  margin-top:20px;
+  font-size:13px;
+  color:#666;
+}
+</style>
 </head>
 
 <body>
 
-  <button id="googleBtn">Sign in with Google</button>
+<div class="card">
+  <div class="logo">RozanaCash</div>
+  <div class="tagline">Earn daily • Play smart • Withdraw fast</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <button class="google-btn" id="googleBtn">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg">
+    Sign in with Google
+  </button>
 
-    // 🔥 FIREBASE CONFIG (tumhara real)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-      authDomain: "earncash7-f0ecc.firebaseapp.com",
-      projectId: "earncash7-f0ecc",
-      appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-    };
+  <div class="note">
+    Secure login • No password required
+  </div>
+</div>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // Button click
-    document.getElementById("googleBtn").addEventListener("click", () => {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          // ✅ LOGIN SUCCESS
-          window.location.href = "dashboard.html";
-        })
-        .catch((error) => {
-          alert("Login Error ❌\n\n" + error.message);
-        });
-    });
-  </script>
+const firebaseConfig={
+ apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+ authDomain:"earncash7-f0ecc.firebaseapp.com",
+ projectId:"earncash7-f0ecc",
+ appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const provider = new GoogleAuthProvider();
+
+// 🔥 FORCE ACCOUNT CHOOSER (MOST IMPORTANT)
+provider.setCustomParameters({
+  prompt: "select_account"
+});
+
+// ✅ BUTTON CLICK → REDIRECT LOGIN
+googleBtn.addEventListener("click", () => {
+  googleBtn.disabled = true; // double click protection
+  signInWithRedirect(auth, provider);
+});
+
+// ✅ REDIRECT SE WAPAS AANE PAR
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      location.href = "dashboard.html";
+    }
+  })
+  .catch((error) => {
+    console.log(error);
+    alert("Login failed");
+  });
+</script>
 
 </body>
 </html>
