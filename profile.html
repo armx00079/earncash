@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>My Profile</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{margin:0;font-family:Arial;background:#f3f3f3}
 .header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}
@@ -70,7 +71,7 @@ body{margin:0;font-family:Arial;background:#f3f3f3}
   <div class="row"><span class="label">Joined</span><span class="value" id="joined">-</span></div>
 </div>
 
-<!-- 🔗 REFERRAL SECTION (STEP-3) -->
+<!-- 🎁 REFERRAL SECTION -->
 <div class="ref-box">
   <h3 style="margin:0;color:#5e239d">🎁 Invite & Earn ₹20</h3>
   <p style="font-size:14px;margin:6px 0">
@@ -100,7 +101,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let referralLink="";
+let referralLink = "";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -124,9 +125,9 @@ onAuthStateChanged(auth, async (user) => {
       data.createdAt.toDate().toLocaleDateString();
   }
 
-  // 🔗 CREATE REFERRAL LINK
+  // ✅ FINAL FIXED REFERRAL LINK (GITHUB PAGES SAFE)
   referralLink =
-    location.origin + "/index.html?ref=" + user.uid;
+    location.origin + "/earncash/index.html?ref=" + user.uid;
 
   document.getElementById("refLink").innerText = referralLink;
 });
