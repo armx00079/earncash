@@ -42,7 +42,6 @@ body{margin:0;font-family:Arial;background:#f3f3f3}
 
 <button class="back" onclick="history.back()">← Back</button>
 
-<!-- 🔥 FINAL FIXED SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -51,8 +50,7 @@ import {
   collection,
   query,
   where,
-  getDocs,
-  orderBy
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -72,13 +70,10 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  /* =======================
-     💰 DEPOSIT HISTORY
-     ======================= */
+  /* 💰 DEPOSIT HISTORY */
   const depQuery = query(
     collection(db, "payments"),
-    where("uid", "==", user.uid),
-    orderBy("createdAt", "desc")
+    where("uid", "==", user.uid)
   );
 
   const depSnap = await getDocs(depQuery);
@@ -98,13 +93,10 @@ onAuthStateChanged(auth, async (user) => {
     });
   }
 
-  /* =======================
-     🏧 WITHDRAW HISTORY
-     ======================= */
+  /* 🏧 WITHDRAW HISTORY */
   const witQuery = query(
     collection(db, "withdrawRequests"),
-    where("uid", "==", user.uid),
-    orderBy("createdAt", "desc")
+    where("uid", "==", user.uid)
   );
 
   const witSnap = await getDocs(witQuery);
