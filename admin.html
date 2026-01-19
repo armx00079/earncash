@@ -18,6 +18,19 @@ header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20
 button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;margin-right:5px}
 .approve{background:#5e239d}
 .reject{background:#e53935}
+
+/* POPUP */
+#balancePopup{
+ display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+ background:rgba(0,0,0,.6);z-index:999;
+ align-items:center;justify-content:center;
+}
+#balanceBox{
+ background:white;padding:20px;border-radius:12px;width:280px;text-align:center
+}
+#balanceBox input{
+ width:100%;padding:10px;margin:10px 0
+}
 </style>
 </head>
 
@@ -51,6 +64,22 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
   <div id="withdrawList"></div>
 </div>
 
+<div class="section">
+  <h3>👤 User List</h3>
+  <div id="userList"></div>
+</div>
+
+</div>
+
+<!-- BALANCE POPUP -->
+<div id="balancePopup">
+  <div id="balanceBox">
+    <h3>💰 Update Balance</h3>
+    <input id="balAmount" type="number" placeholder="Enter amount">
+    <button class="approve" onclick="addBal()">➕ Add</button>
+    <button class="reject" onclick="minusBal()">➖ Minus</button><br><br>
+    <button onclick="closeBal()">Close</button>
+  </div>
 </div>
 
 <script type="module">
@@ -68,6 +97,8 @@ const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 const today=new Date().toDateString();
 
+let selectedUser="";
+
 loadDashboard();
 
 async function loadDashboard(){
@@ -78,11 +109,11 @@ async function loadDashboard(){
  const deposits=await getDocs(collection(db,"payments"));
 
  deposits.forEach(d=>{
-   const x=d.data();
-   if(x.status==="approved") totalDep+=x.amount;
-   if(x.status==="pending") pendingDep++;
-   if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
-     todayDep+=x.amount;
+  const x=d.data();
+  if(x.status==="approved") totalDep+=x.amount;
+  if(x.status==="pending") pendingDep++;
+  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
+    todayDep+=x.amount;
  });
 
  totalDeposits.innerText=totalDep;
@@ -93,10 +124,10 @@ async function loadDashboard(){
  const withdraws=await getDocs(collection(db,"withdrawRequests"));
 
  withdraws.forEach(d=>{
-   const x=d.data();
-   if(x.status==="pending") pendingW++;
-   if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
-     todayW+=x.amount;
+  const x=d.data();
+  if(x.status==="pending") pendingW++;
+  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
+    todayW+=x.amount;
  });
 
  pendingWithdraw.innerText=pendingW;
@@ -105,6 +136,7 @@ async function loadDashboard(){
 
  renderDeposits(deposits);
  renderWithdraws(withdraws);
+ loadUsers();
 }
 
 function renderDeposits(snapshot){
@@ -127,7 +159,6 @@ window.approveDeposit=async(id,uid,amt)=>{
  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
  location.reload();
 };
-
 window.rejectDeposit=async(id)=>{
  await updateDoc(doc(db,"payments",id),{status:"rejected"});
  location.reload();
@@ -142,7 +173,6 @@ function renderWithdraws(snapshot){
    <div class="req">
     User: ${x.uid}<br>
     Amount: ₹${x.amount}<br>
-    UPI: ${x.upi}<br>
     <button class="approve" onclick="approveWithdraw('${d.id}','${x.uid}',${x.amount})">Approve</button>
     <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
    </div>`;
@@ -154,9 +184,42 @@ window.approveWithdraw=async(id,uid,amt)=>{
  await updateDoc(doc(db,"users",uid),{totalEarned:increment(-amt)});
  location.reload();
 };
-
 window.rejectWithdraw=async(id)=>{
  await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
+ location.reload();
+};
+
+/* USER LIST + BALANCE */
+async function loadUsers(){
+ const snap=await getDocs(collection(db,"users"));
+ userList.innerHTML="";
+ snap.forEach(d=>{
+  const u=d.data();
+  userList.innerHTML+=`
+   <div class="req">
+    <b>${u.email || "No Email"}</b><br>
+    Balance: ₹${u.balance}<br>
+    <button class="approve" onclick="openBal('${d.id}')">Manage Balance</button>
+   </div>`;
+ });
+}
+
+window.openBal=(uid)=>{
+ selectedUser=uid;
+ balancePopup.style.display="flex";
+};
+window.closeBal=()=>balancePopup.style.display="none";
+
+window.addBal=async()=>{
+ const amt=parseInt(balAmount.value);
+ if(!amt) return alert("Enter amount");
+ await updateDoc(doc(db,"users",selectedUser),{balance:increment(amt)});
+ location.reload();
+};
+window.minusBal=async()=>{
+ const amt=parseInt(balAmount.value);
+ if(!amt) return alert("Enter amount");
+ await updateDoc(doc(db,"users",selectedUser),{balance:increment(-amt)});
  location.reload();
 };
 </script>
