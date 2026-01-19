@@ -65,7 +65,6 @@ canvas{margin-top:10px}
   font-weight:bold;
 }
 
-/* RESULT POPUP */
 #resultPopup{
   display:none;
   position:fixed;
@@ -113,7 +112,6 @@ canvas{margin-top:10px}
   </div>
 </div>
 
-<!-- 🔽 BOTTOM NAV (FIXED PROFILE BUTTON) -->
 <div class="bottom-nav">
   <button onclick="location.href='dashboard.html'">🏠 Home</button>
   <button onclick="location.href='history.html'">📜 History</button>
@@ -126,6 +124,19 @@ canvas{margin-top:10px}
     <p style="margin-top:10px;font-weight:bold">Spin Result</p>
   </div>
 </div>
+
+<!-- 🔊 SOUNDS -->
+<audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+<audio id="winSound" src="win.mp3" preload="auto"></audio>
+
+<!-- 🔊 MUTE BUTTON -->
+<button id="muteBtn"
+style="position:fixed;top:70px;right:15px;
+background:#ffcc00;border:none;
+padding:8px 14px;border-radius:20px;
+font-weight:bold;z-index:1000">
+🔊 Sound ON
+</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -141,6 +152,15 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
+
+let soundEnabled=true;
+const spinSound=document.getElementById("spinSound");
+const winSound=document.getElementById("winSound");
+
+muteBtn.onclick=()=>{
+ soundEnabled=!soundEnabled;
+ muteBtn.innerText=soundEnabled?"🔊 Sound ON":"🔇 Sound OFF";
+};
 
 const slices=[-60,-20,20,40,60,100,150,200];
 const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
@@ -207,6 +227,11 @@ spinBtn.onclick=async()=>{
   return;
  }
 
+ if(soundEnabled){
+  spinSound.currentTime=0;
+  spinSound.play();
+ }
+
  const spins=5;
  const randomDeg=Math.floor(Math.random()*360);
  const rotateTo=spins*360+randomDeg;
@@ -226,6 +251,13 @@ spinBtn.onclick=async()=>{
  });
 
  setTimeout(async()=>{
+  spinSound.pause();
+  spinSound.currentTime=0;
+  if(soundEnabled){
+   winSound.currentTime=0;
+   winSound.play();
+  }
+
   const s=await getDoc(userRef);
   wallet.innerText=s.data().balance;
   winning.innerText=s.data().totalEarned;
