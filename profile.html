@@ -11,6 +11,26 @@ body{margin:0;font-family:Arial;background:#f3f3f3}
 .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
 .label{color:#555}
 .value{font-weight:bold}
+
+input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-top:10px;
+}
+
+.save{
+  margin-top:10px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#5e239d;
+  color:white;
+  font-size:16px;
+}
+
 .btn{
   margin:20px;
   background:#e53935;
@@ -40,6 +60,9 @@ body{margin:0;font-family:Arial;background:#f3f3f3}
 
 <div class="card">
   <div class="row"><span class="label">Name</span><span class="value" id="name">-</span></div>
+  <input id="editName" placeholder="Enter new name">
+  <button class="save" onclick="updateName()">Save Name</button>
+
   <div class="row"><span class="label">Email</span><span class="value" id="email">-</span></div>
   <div class="row"><span class="label">Wallet</span><span class="value">₹<span id="wallet">0</span></span></div>
   <div class="row"><span class="label">Winning</span><span class="value">₹<span id="winning">0</span></span></div>
@@ -48,10 +71,11 @@ body{margin:0;font-family:Arial;background:#f3f3f3}
 
 <button class="btn" onclick="logout()">Logout</button>
 <button class="back" onclick="history.back()">← Back</button>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
@@ -64,35 +88,48 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let currentUserRef;
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.href = "index.html";
     return;
   }
 
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef);
-
+  currentUserRef = doc(db, "users", user.uid);
+  const snap = await getDoc(currentUserRef);
   if (!snap.exists()) return;
 
   const data = snap.data();
 
-  // ✅ SET VALUES
   document.getElementById("name").innerText = data.name || user.displayName || "-";
   document.getElementById("email").innerText = data.email || user.email || "-";
-  document.getElementById("wallet").innerText = "₹" + (data.balance ?? 0);
-  document.getElementById("winning").innerText = "₹" + (data.totalEarned ?? 0);
+  document.getElementById("wallet").innerText = data.balance ?? 0;
+  document.getElementById("winning").innerText = data.totalEarned ?? 0;
 
   if (data.createdAt?.toDate) {
     document.getElementById("joined").innerText =
       data.createdAt.toDate().toLocaleDateString();
-  } else {
-    document.getElementById("joined").innerText = "-";
   }
 });
+
+// ✏️ UPDATE NAME
+window.updateName = async () => {
+  const newName = document.getElementById("editName").value.trim();
+  if (!newName) {
+    alert("❌ Name empty hai");
+    return;
+  }
+  await updateDoc(currentUserRef, { name: newName });
+  alert("✅ Name updated");
+  location.reload();
+};
 
 // 🚪 LOGOUT
 window.logout = () => {
   signOut(auth).then(() => location.href = "index.html");
 };
 </script>
+
+</body>
+</html>
