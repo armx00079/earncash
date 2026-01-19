@@ -104,12 +104,19 @@ const firebaseConfig={
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
 const provider = new GoogleAuthProvider();
 
-// ✅ BUTTON CLICK → REDIRECT LOGIN (BEST FOR MOBILE)
-googleBtn.onclick = () => {
+// 🔥 FORCE ACCOUNT CHOOSER (MOST IMPORTANT)
+provider.setCustomParameters({
+  prompt: "select_account"
+});
+
+// ✅ BUTTON CLICK → REDIRECT LOGIN
+googleBtn.addEventListener("click", () => {
+  googleBtn.disabled = true; // double click protection
   signInWithRedirect(auth, provider);
-};
+});
 
 // ✅ REDIRECT SE WAPAS AANE PAR
 getRedirectResult(auth)
