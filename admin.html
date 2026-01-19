@@ -19,16 +19,6 @@ header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20
 button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;margin-right:5px}
 .approve{background:#5e239d}
 .reject{background:#e53935}
-
-#balancePopup{
- display:none;position:fixed;top:0;left:0;right:0;bottom:0;
- background:rgba(0,0,0,.6);z-index:999;
- align-items:center;justify-content:center;
-}
-#balanceBox{
- background:white;padding:20px;border-radius:12px;width:280px;text-align:center
-}
-#balanceBox input{width:100%;padding:10px;margin:10px 0}
 </style>
 </head>
 
@@ -69,19 +59,8 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
 
 </div>
 
-<div id="balancePopup">
-  <div id="balanceBox">
-    <h3>💰 Update Balance</h3>
-    <input id="balAmount" type="number" placeholder="Enter amount">
-    <button class="approve" onclick="addBal()">➕ Add</button>
-    <button class="reject" onclick="minusBal()">➖ Minus</button><br><br>
-    <button onclick="closeBal()">Close</button>
-  </div>
-</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, getDocs, doc, updateDoc, increment } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -93,19 +72,10 @@ const firebaseConfig={
 };
 
 const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
 const db=getFirestore(app);
-
-let selectedUser="";
 const today=new Date().toDateString();
 
-onAuthStateChanged(auth, user=>{
- if(!user){
-   location.href="index.html";
-   return;
- }
- loadDashboard();
-});
+loadDashboard();
 
 async function loadDashboard(){
  const users=await getDocs(collection(db,"users"));
@@ -116,9 +86,11 @@ async function loadDashboard(){
 
  deposits.forEach(d=>{
   const x=d.data();
-  if(x.status==="approved") totalDep+=Number(x.amount||0);
-  if(x.status==="pending") pendingDep++;
-  if(x.status==="approved" && x.createdAt && x.createdAt.toDate().toDateString()===today)
+  const status=(x.status||"").toLowerCase();
+
+  if(status==="approved") totalDep+=Number(x.amount||0);
+  if(status==="pending") pendingDep++;
+  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
     todayDep+=Number(x.amount||0);
  });
 
@@ -131,8 +103,10 @@ async function loadDashboard(){
 
  withdraws.forEach(d=>{
   const x=d.data();
-  if(x.status==="pending") pendingW++;
-  if(x.status==="approved" && x.createdAt && x.createdAt.toDate().toDateString()===today)
+  const status=(x.status||"").toLowerCase();
+
+  if(status==="pending") pendingW++;
+  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
     todayW+=Number(x.amount||0);
  });
 
@@ -149,7 +123,7 @@ function renderDeposits(snapshot){
  depositList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if(x.status!=="pending") return;
+  if((x.status||"").toLowerCase()!=="pending") return;
   depositList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
@@ -175,18 +149,18 @@ function renderWithdraws(snapshot){
  withdrawList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if(x.status!=="pending") return;
+  if((x.status||"").toLowerCase()!=="pending") return;
   withdrawList.innerHTML+=`
    <div class="req">
     User: ${x.uid}<br>
     Amount: ₹${x.amount}<br>
-    <button class="approve" onclick="approveWithdraw('${d.id}','${x.uid}',${x.amount})">Approve</button>
+    <button class="approve" onclick="approveWithdraw('${d.id}')">Approve</button>
     <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
    </div>`;
  });
 }
 
-window.approveWithdraw=async(id,uid,amt)=>{
+window.approveWithdraw=async(id)=>{
  await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
  location.reload();
 };
@@ -204,30 +178,10 @@ async function loadUsers(){
   userList.innerHTML+=`
    <div class="req">
     <b>${u.email || "No Email"}</b><br>
-    Balance: ₹${u.balance || 0}<br>
-    <button class="approve" onclick="openBal('${d.id}')">Manage Balance</button>
+    Balance: ₹${u.balance||0}
    </div>`;
  });
 }
-
-window.openBal=(uid)=>{
- selectedUser=uid;
- balancePopup.style.display="flex";
-};
-window.closeBal=()=>balancePopup.style.display="none";
-
-window.addBal=async()=>{
- const amt=parseInt(balAmount.value);
- if(!amt) return alert("Enter amount");
- await updateDoc(doc(db,"users",selectedUser),{balance:increment(amt)});
- location.reload();
-};
-window.minusBal=async()=>{
- const amt=parseInt(balAmount.value);
- if(!amt) return alert("Enter amount");
- await updateDoc(doc(db,"users",selectedUser),{balance:increment(-amt)});
- location.reload();
-};
 </script>
 
 </body>
