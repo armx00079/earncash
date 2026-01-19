@@ -57,7 +57,7 @@ canvas{margin-top:10px}
  </div>
 </div>
 
-<!-- 🔔 LIVE WIN NOTIFICATION (ADDED) -->
+<!-- 🔔 LIVE WIN NOTIFICATION (FINAL FIXED) -->
 <div id="liveWin" style="
  margin:0 15px;
  background:#fff;
@@ -68,6 +68,7 @@ canvas{margin-top:10px}
  box-shadow:0 4px 10px rgba(0,0,0,0.12);
  text-align:center;
  transition:0.4s;
+ pointer-events:none;
 ">
  👤 User123 won ₹40 <span style="color:gray;font-size:12px">Just now</span>
 </div>
@@ -125,140 +126,8 @@ align-items:center;
  </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,doc,getDoc,updateDoc,increment } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig={
- apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
- authDomain:"earncash7-f0ecc.firebaseapp.com",
- projectId:"earncash7-f0ecc",
- appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
-
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-const canvas=document.getElementById("wheel");
-const ctx=canvas.getContext("2d");
-const cx=150,cy=150,radius=140;
-let userRef;
-
-const slices=[-60,-20,20,40,60,100,150,200];
-const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
-
-function drawWheel(){
- const arc=2*Math.PI/slices.length;
- ctx.clearRect(0,0,300,300);
- slices.forEach((val,i)=>{
-  const angle=i*arc;
-  ctx.beginPath();
-  ctx.fillStyle=colors[i];
-  ctx.moveTo(cx,cy);
-  ctx.arc(cx,cy,radius,angle,angle+arc);
-  ctx.fill();
-
-  ctx.save();
-  ctx.translate(cx,cy);
-  ctx.rotate(angle+arc/2);
-  ctx.fillStyle="#fff";
-  ctx.font="bold 16px Arial";
-  ctx.textAlign="right";
-  ctx.fillText(val, radius-10,5);
-  ctx.restore();
- });
-}
-drawWheel();
-
-async function getSpinControl(){
- const snap=await getDoc(doc(db,"admin","spinControl"));
- return snap.data();
-}
-
-function todayDate(){
- const d=new Date();
- return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-}
-
-onAuthStateChanged(auth,async user=>{
- if(!user){location.href="index.html";return;}
- userRef=doc(db,"users",user.uid);
- const snap=await getDoc(userRef);
- wallet.innerText=snap.data().balance;
- winning.innerText=snap.data().totalEarned;
-});
-
-spinBtn.onclick=async()=>{
- const control=await getSpinControl();
- const spinCost=control.spinCost;
- const winPercent=control.winPercent;
- const maxWin=control.maxWin;
- const dailyUserMaxWin=control.dailyUserMaxWin;
-
- const snap=await getDoc(userRef);
- let user=snap.data();
-
- if(user.balance < spinCost){
-  alert("❌ Minimum "+spinCost+" coins required");
-  return;
- }
-
- const today=todayDate();
- let dailyWin=user.dailyWin||0;
- let lastWinDate=user.lastWinDate||"";
-
- if(lastWinDate!==today){
-  dailyWin=0;
-  await updateDoc(userRef,{dailyWin:0,lastWinDate:today});
- }
-
- let reward=0;
- const chance=Math.random()*100;
-
- if(chance < winPercent && dailyWin < dailyUserMaxWin){
-  reward=Math.floor(Math.random()*(maxWin-10+1))+10;
-  if(dailyWin+reward > dailyUserMaxWin){
-   reward=dailyUserMaxWin-dailyWin;
-  }
- }else{
-  reward=-spinCost;
- }
-
- const spins=5;
- const rotateTo=spins*360+Math.floor(Math.random()*360);
- canvas.style.transition="none";
- canvas.style.transform="rotate(0deg)";
- setTimeout(()=>{
-  canvas.style.transition="transform 4s cubic-bezier(.25,.1,.25,1)";
-  canvas.style.transform=`rotate(${rotateTo}deg)`;
- },50);
-
- await updateDoc(userRef,{
-  balance:increment(-spinCost+reward),
-  totalEarned:increment(reward>0?reward:0),
-  dailyWin:increment(reward>0?reward:0),
-  lastWinDate:today
- });
-
- setTimeout(async()=>{
-  const s=await getDoc(userRef);
-  wallet.innerText=s.data().balance;
-  winning.innerText=s.data().totalEarned;
-  resultAmount.innerText="₹"+reward;
-  resultPopup.style.display="flex";
-  setTimeout(()=>resultPopup.style.display="none",2000);
- },4000);
-};
-
-window.deposit=()=>location.href="deposit.html";
-window.withdraw=()=>location.href="withdraw.html";
-</script>
-
+<!-- 🔔 LIVE NOTIFICATION SCRIPT -->
 <script>
-// 🔔 LIVE WIN AUTO NOTIFICATION
 const liveWin=document.getElementById("liveWin");
 const users=["User4821","User7784","User1290","User8842","User3001","User6590"];
 const amounts=[20,40,60,100,150,200];
@@ -274,6 +143,22 @@ function updateLive(){
  },300);
 }
 setInterval(updateLive,5000);
+</script>
+
+<script>
+const leaderboardBtn=document.getElementById("leaderboardBtn");
+const leaderboard=document.getElementById("leaderboard");
+const leaderboardList=document.getElementById("leaderboardList");
+
+leaderboardBtn.onclick=()=>{
+ leaderboard.style.display="flex";
+ leaderboardList.innerHTML="";
+ for(let i=0;i<5;i++){
+  leaderboardList.innerHTML+=`
+  <p>👤 User${Math.floor(Math.random()*9000)} — ₹${Math.floor(Math.random()*500)+100}
+  <span style="float:right;color:gray;font-size:12px">Just now</span></p>`;
+ }
+};
 </script>
 
 </body>
