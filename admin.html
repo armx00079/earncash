@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{margin:0;font-family:Arial;background:#f4f6f8}
 header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20px}
@@ -19,7 +20,6 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
 .approve{background:#5e239d}
 .reject{background:#e53935}
 
-/* POPUP */
 #balancePopup{
  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
  background:rgba(0,0,0,.6);z-index:999;
@@ -28,9 +28,7 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
 #balanceBox{
  background:white;padding:20px;border-radius:12px;width:280px;text-align:center
 }
-#balanceBox input{
- width:100%;padding:10px;margin:10px 0
-}
+#balanceBox input{width:100%;padding:10px;margin:10px 0}
 </style>
 </head>
 
@@ -71,7 +69,6 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
 
 </div>
 
-<!-- BALANCE POPUP -->
 <div id="balancePopup">
   <div id="balanceBox">
     <h3>💰 Update Balance</h3>
@@ -84,7 +81,9 @@ button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore,collection,getDocs,doc,updateDoc,increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, increment } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
@@ -94,12 +93,19 @@ const firebaseConfig={
 };
 
 const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 const db=getFirestore(app);
-const today=new Date().toDateString();
 
 let selectedUser="";
+const today=new Date().toDateString();
 
-loadDashboard();
+onAuthStateChanged(auth, user=>{
+ if(!user){
+   location.href="index.html";
+   return;
+ }
+ loadDashboard();
+});
 
 async function loadDashboard(){
  const users=await getDocs(collection(db,"users"));
@@ -110,10 +116,10 @@ async function loadDashboard(){
 
  deposits.forEach(d=>{
   const x=d.data();
-  if(x.status==="approved") totalDep+=x.amount;
+  if(x.status==="approved") totalDep+=Number(x.amount||0);
   if(x.status==="pending") pendingDep++;
-  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
-    todayDep+=x.amount;
+  if(x.status==="approved" && x.createdAt && x.createdAt.toDate().toDateString()===today)
+    todayDep+=Number(x.amount||0);
  });
 
  totalDeposits.innerText=totalDep;
@@ -126,8 +132,8 @@ async function loadDashboard(){
  withdraws.forEach(d=>{
   const x=d.data();
   if(x.status==="pending") pendingW++;
-  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
-    todayW+=x.amount;
+  if(x.status==="approved" && x.createdAt && x.createdAt.toDate().toDateString()===today)
+    todayW+=Number(x.amount||0);
  });
 
  pendingWithdraw.innerText=pendingW;
@@ -159,6 +165,7 @@ window.approveDeposit=async(id,uid,amt)=>{
  await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
  location.reload();
 };
+
 window.rejectDeposit=async(id)=>{
  await updateDoc(doc(db,"payments",id),{status:"rejected"});
  location.reload();
@@ -181,15 +188,14 @@ function renderWithdraws(snapshot){
 
 window.approveWithdraw=async(id,uid,amt)=>{
  await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
- await updateDoc(doc(db,"users",uid),{totalEarned:increment(-amt)});
  location.reload();
 };
+
 window.rejectWithdraw=async(id)=>{
  await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
  location.reload();
 };
 
-/* USER LIST + BALANCE */
 async function loadUsers(){
  const snap=await getDocs(collection(db,"users"));
  userList.innerHTML="";
@@ -198,7 +204,7 @@ async function loadUsers(){
   userList.innerHTML+=`
    <div class="req">
     <b>${u.email || "No Email"}</b><br>
-    Balance: ₹${u.balance}<br>
+    Balance: ₹${u.balance || 0}<br>
     <button class="approve" onclick="openBal('${d.id}')">Manage Balance</button>
    </div>`;
  });
