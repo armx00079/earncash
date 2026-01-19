@@ -86,11 +86,9 @@ async function loadDashboard(){
 
  deposits.forEach(d=>{
   const x=d.data();
-  const status=(x.status||"").toLowerCase();
-
-  if(status==="approved") totalDep+=Number(x.amount||0);
-  if(status==="pending") pendingDep++;
-  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
+  if(x.status==="approved") totalDep+=Number(x.amount||0);
+  if(x.status==="pending") pendingDep++;
+  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
     todayDep+=Number(x.amount||0);
  });
 
@@ -103,10 +101,8 @@ async function loadDashboard(){
 
  withdraws.forEach(d=>{
   const x=d.data();
-  const status=(x.status||"").toLowerCase();
-
-  if(status==="pending") pendingW++;
-  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
+  if(x.status==="pending") pendingW++;
+  if(x.status==="approved" && x.createdAt?.toDate().toDateString()===today)
     todayW+=Number(x.amount||0);
  });
 
@@ -123,11 +119,11 @@ function renderDeposits(snapshot){
  depositList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if((x.status||"").toLowerCase()!=="pending") return;
+  if(x.status!=="pending") return;
   depositList.innerHTML+=`
    <div class="req">
-    User: ${x.uid}<br>
-    Amount: ₹${x.amount}<br>
+    <b>User:</b> ${x.uid}<br>
+    <b>Amount:</b> ₹${x.amount}<br>
     <button class="approve" onclick="approveDeposit('${d.id}','${x.uid}',${x.amount})">Approve</button>
     <button class="reject" onclick="rejectDeposit('${d.id}')">Reject</button>
    </div>`;
@@ -145,15 +141,36 @@ window.rejectDeposit=async(id)=>{
  location.reload();
 };
 
+/* ✅ BANK / UPI DETAILS ADDED HERE */
 function renderWithdraws(snapshot){
  withdrawList.innerHTML="";
  snapshot.forEach(d=>{
   const x=d.data();
-  if((x.status||"").toLowerCase()!=="pending") return;
+  if(x.status!=="pending") return;
+
+  let details="";
+  if(x.method==="BANK" && x.bank){
+    details=`
+     <b>Method:</b> BANK<br>
+     <b>Name:</b> ${x.bank.name}<br>
+     <b>Account:</b> ${x.bank.acc}<br>
+     <b>IFSC:</b> ${x.bank.ifsc}<br>
+     <b>Bank:</b> ${x.bank.bank}<br>
+    `;
+  }
+
+  if(x.method==="UPI"){
+    details=`
+     <b>Method:</b> UPI<br>
+     <b>UPI ID:</b> ${x.upi}
+    `;
+  }
+
   withdrawList.innerHTML+=`
    <div class="req">
-    User: ${x.uid}<br>
-    Amount: ₹${x.amount}<br>
+    <b>User:</b> ${x.uid}<br>
+    <b>Amount:</b> ₹${x.amount}<br>
+    ${details}
     <button class="approve" onclick="approveWithdraw('${d.id}')">Approve</button>
     <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
    </div>`;
