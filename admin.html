@@ -1,224 +1,694 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<title>Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>RozanaCash Admin Panel</title>
+
+<link
+rel="preconnect"
+href="https://fonts.googleapis.com">
+
+<link
+rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
-header{background:#5e239d;color:#fff;padding:15px;text-align:center;font-size:20px}
-.container{padding:15px}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:#fff;border-radius:10px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,.1);font-weight:bold}
-.green{color:#2e7d32}
-.red{color:#c62828}
-.purple{color:#5e239d}
-.section{margin-top:25px;background:#fff;border-radius:10px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
-.req{border-bottom:1px solid #eee;padding:10px 0}
-button{padding:8px 14px;border:none;border-radius:6px;color:#fff;cursor:pointer;margin-right:5px}
-.approve{background:#5e239d}
-.reject{background:#e53935}
-.time{font-size:13px;color:#555;margin:4px 0}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+background:#eef2ff;
+
+color:#222;
+
+min-height:100vh;
+
+}
+
+header{
+
+background:linear-gradient(135deg,#5e239d,#7b2cbf);
+
+padding:18px;
+
+color:#fff;
+
+font-size:22px;
+
+font-weight:700;
+
+text-align:center;
+
+box-shadow:0 8px 20px rgba(0,0,0,.15);
+
+position:sticky;
+
+top:0;
+
+z-index:999;
+
+}
+
+.container{
+
+width:95%;
+
+max-width:1400px;
+
+margin:auto;
+
+padding:20px;
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(220px,1fr));
+
+gap:18px;
+
+margin-bottom:22px;
+
+}
+
+.card{
+
+background:#fff;
+
+border-radius:18px;
+
+padding:18px;
+
+box-shadow:
+0 10px 25px rgba(0,0,0,.08);
+
+transition:.3s;
+
+}
+
+.card:hover{
+
+transform:translateY(-4px);
+
+}
+
+.card h3{
+
+font-size:15px;
+
+color:#666;
+
+margin-bottom:10px;
+
+}
+
+.card h1{
+
+font-size:32px;
+
+font-weight:700;
+
+color:#5e239d;
+
+}
+
+.section{
+
+background:#fff;
+
+border-radius:18px;
+
+padding:20px;
+
+margin-top:22px;
+
+box-shadow:
+0 10px 25px rgba(0,0,0,.08);
+
+}
+
+.section-title{
+
+font-size:20px;
+
+font-weight:700;
+
+margin-bottom:18px;
+
+color:#5e239d;
+
+display:flex;
+
+align-items:center;
+
+gap:8px;
+
+}
+
+.grid2{
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(260px,1fr));
+
+gap:18px;
+
+}
+
+.input-group{
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+}
+
+.input-group label{
+
+font-size:14px;
+
+font-weight:600;
+
+color:#555;
+
+}
+
+.input-group input{
+
+height:48px;
+
+padding:12px;
+
+border-radius:12px;
+
+border:1px solid #ddd;
+
+outline:none;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+.input-group input:focus{
+
+border-color:#5e239d;
+
+box-shadow:
+0 0 0 3px rgba(94,35,157,.15);
+
+}
+
+.saveBtn{
+
+margin-top:20px;
+
+background:#5e239d;
+
+color:#fff;
+
+border:none;
+
+height:50px;
+
+width:100%;
+
+border-radius:14px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+.saveBtn:hover{
+
+background:#4b1d80;
+
+}
+
+.searchBox{
+
+margin-bottom:18px;
+
+}
+
+.searchBox input{
+
+width:100%;
+
+height:48px;
+
+padding:12px;
+
+border-radius:12px;
+
+border:1px solid #ddd;
+
+font-size:15px;
+
+outline:none;
+
+}
+  .table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:15px;
+
+}
+
+.table th{
+
+background:#5e239d;
+
+color:#fff;
+
+padding:14px;
+
+font-size:14px;
+
+text-align:left;
+
+}
+
+.table td{
+
+padding:14px;
+
+border-bottom:1px solid #eee;
+
+font-size:14px;
+
+}
+
+.badge{
+
+display:inline-block;
+
+padding:6px 12px;
+
+border-radius:30px;
+
+font-size:12px;
+
+font-weight:600;
+
+}
+
+.pending{
+
+background:#fff4d6;
+
+color:#d68910;
+
+}
+
+.approved{
+
+background:#d5f5e3;
+
+color:#239b56;
+
+}
+
+.rejected{
+
+background:#fadbd8;
+
+color:#c0392b;
+
+}
+
+.actionBtn{
+
+border:none;
+
+padding:10px 18px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-size:13px;
+
+font-weight:600;
+
+margin-right:8px;
+
+transition:.25s;
+
+}
+
+.approveBtn{
+
+background:#2ecc71;
+
+color:white;
+
+}
+
+.rejectBtn{
+
+background:#e74c3c;
+
+color:white;
+
+}
+
+.editBtn{
+
+background:#5e239d;
+
+color:white;
+
+}
+
+.actionBtn:hover{
+
+transform:scale(.97);
+
+}
+
+.userCard{
+
+background:#fafafa;
+
+border:1px solid #ececec;
+
+border-radius:14px;
+
+padding:15px;
+
+margin-bottom:12px;
+
+}
+
+.userTitle{
+
+font-size:16px;
+
+font-weight:700;
+
+color:#5e239d;
+
+margin-bottom:8px;
+
+}
+
+.userInfo{
+
+font-size:14px;
+
+color:#555;
+
+line-height:1.8;
+
+}
+
+.flex{
+
+display:flex;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+}
+
+.stat{
+
+background:#f8f7ff;
+
+border-radius:12px;
+
+padding:14px;
+
+text-align:center;
+
+flex:1;
+
+min-width:120px;
+
+}
+
+.stat h2{
+
+color:#5e239d;
+
+font-size:24px;
+
+margin-bottom:4px;
+
+}
+
+.stat p{
+
+font-size:13px;
+
+color:#666;
+
+}
+
+@media(max-width:768px){
+
+header{
+
+font-size:18px;
+
+padding:15px;
+
+}
+
+.card h1{
+
+font-size:26px;
+
+}
+
+.section{
+
+padding:16px;
+
+}
+
+.table{
+
+display:block;
+
+overflow-x:auto;
+
+white-space:nowrap;
+
+}
+
+}
+
 </style>
+
 </head>
 
 <body>
 
-<header>🔓 Admin Control Panel</header>
+<header>
+
+👑 RozanaCash Admin Panel
+
+</header>
 
 <div class="container">
 
 <div class="cards">
-  <div class="card purple">👥 Total Users<br><span id="totalUsers">0</span></div>
-  <div class="card green">💰 Total Deposits<br>₹<span id="totalDeposits">0</span></div>
-  <div class="card red">⏳ Pending Deposits<br><span id="pendingDeposits">0</span></div>
-  <div class="card purple">🏧 Withdraw Requests<br><span id="pendingWithdraw">0</span></div>
+
+<div class="card">
+
+<h3>Total Users</h3>
+
+<h1 id="totalUsers">0</h1>
+
 </div>
+
+<div class="card">
+
+<h3>Total Deposit</h3>
+
+<h1 id="totalDeposit">₹0</h1>
+
+</div>
+
+<div class="card">
+
+<h3>Pending Deposit</h3>
+
+<h1 id="pendingDeposit">0</h1>
+
+</div>
+
+<div class="card">
+
+<h3>Pending Withdraw</h3>
+
+<h1 id="pendingWithdraw">0</h1>
+
+</div>
+
+</div>
+<!-- ================= ADMIN SPIN SETTINGS ================= -->
 
 <div class="section">
-  <h3>📊 Daily Profit Report</h3>
-  <p>Deposits Today: ₹<span id="todayDeposit">0</span></p>
-  <p>Withdraw Today: ₹<span id="todayWithdraw">0</span></p>
-  <p class="green"><b>Profit: ₹<span id="todayProfit">0</span></b></p>
+
+<div class="section-title">
+
+🎯 Spin Control Settings
+
 </div>
+
+<div class="grid2">
+
+<div class="input-group">
+<label>Spin Cost</label>
+<input
+type="number"
+id="spinCost">
+</div>
+
+<div class="input-group">
+<label>House Edge (%)</label>
+<input
+type="number"
+min="0"
+max="100"
+id="houseEdge">
+</div>
+
+<div class="input-group">
+<label>Maximum Win</label>
+<input
+type="number"
+id="maxWin">
+</div>
+
+<div class="input-group">
+<label>Daily User Max Win</label>
+<input
+type="number"
+id="dailyUserMaxWin">
+</div>
+
+<div class="input-group">
+<label>Small Win Min</label>
+<input
+type="number"
+id="smallWinMin">
+</div>
+
+<div class="input-group">
+<label>Small Win Max</label>
+<input
+type="number"
+id="smallWinMax">
+</div>
+
+<div class="input-group">
+<label>Medium Win Min</label>
+<input
+type="number"
+id="mediumWinMin">
+</div>
+
+<div class="input-group">
+<label>Medium Win Max</label>
+<input
+type="number"
+id="mediumWinMax">
+</div>
+
+<div class="input-group">
+<label>Big Win Min</label>
+<input
+type="number"
+id="bigWinMin">
+</div>
+
+<div class="input-group">
+<label>Big Win Max</label>
+<input
+type="number"
+id="bigWinMax">
+</div>
+
+<div class="input-group">
+<label>Small Win Chance (%)</label>
+<input
+type="number"
+id="smallWinChance">
+</div>
+
+<div class="input-group">
+<label>Medium Win Chance (%)</label>
+<input
+type="number"
+id="mediumWinChance">
+</div>
+
+<div class="input-group">
+<label>Big Win Chance (%)</label>
+<input
+type="number"
+id="bigWinChance">
+</div>
+
+</div>
+
+<button
+class="saveBtn"
+id="saveSpinSettings">
+
+💾 Save Spin Settings
+
+</button>
+
+</div>
+
+<!-- ================= WITHDRAW SETTINGS ================= -->
 
 <div class="section">
-  <h3>💰 Deposit Requests</h3>
-  <div id="depositList"></div>
-</div>
 
-<div class="section">
-  <h3>🏧 Withdraw Requests</h3>
-  <div id="withdrawList"></div>
-</div>
+<div class="section-title">
 
-<div class="section">
-  <h3>👤 User List</h3>
-  <div id="userList"></div>
-</div>
+🏧 Withdraw Control
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, increment } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig={
- apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
- authDomain:"earncash7-f0ecc.firebaseapp.com",
- projectId:"earncash7-f0ecc",
- appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
-
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const today=new Date().toDateString();
-
-loadDashboard();
-
-async function loadDashboard(){
- const users=await getDocs(collection(db,"users"));
- totalUsers.innerText=users.size;
-
- let totalDep=0,pendingDep=0,todayDep=0;
- const deposits=await getDocs(collection(db,"payments"));
-
- deposits.forEach(d=>{
-  const x=d.data();
-  const status=(x.status||"").toLowerCase();
-  if(status==="approved") totalDep+=Number(x.amount||0);
-  if(status==="pending") pendingDep++;
-  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
-    todayDep+=Number(x.amount||0);
- });
-
- totalDeposits.innerText=totalDep;
- pendingDeposits.innerText=pendingDep;
- todayDeposit.innerText=todayDep;
-
- let pendingW=0,todayW=0;
- const withdraws=await getDocs(collection(db,"withdrawRequests"));
-
- withdraws.forEach(d=>{
-  const x=d.data();
-  const status=(x.status||"").toLowerCase();
-  if(status==="pending") pendingW++;
-  if(status==="approved" && x.createdAt?.toDate().toDateString()===today)
-    todayW+=Number(x.amount||0);
- });
-
- pendingWithdraw.innerText=pendingW;
- todayWithdraw.innerText=todayW;
- todayProfit.innerText=todayDep-todayW;
-
- renderDeposits(deposits);
- renderWithdraws(withdraws);
- loadUsers();
-}
-
-function formatTime(ts){
- if(!ts?.toDate) return "N/A";
- return ts.toDate().toLocaleString("en-IN",{
-  day:"2-digit",
-  month:"short",
-  year:"numeric",
-  hour:"2-digit",
-  minute:"2-digit",
-  hour12:true
- });
-}
-
-/* 💰 DEPOSIT WITH TIME */
-function renderDeposits(snapshot){
- depositList.innerHTML="";
- snapshot.forEach(d=>{
-  const x=d.data();
-  if((x.status||"").toLowerCase()!=="pending") return;
-
-  depositList.innerHTML+=`
-   <div class="req">
-    <b>User:</b> ${x.uid}<br>
-    <b>Amount:</b> ₹${x.amount}<br>
-    <div class="time">🕒 ${formatTime(x.createdAt)}</div>
-    <button class="approve" onclick="approveDeposit('${d.id}','${x.uid}',${x.amount})">Approve</button>
-    <button class="reject" onclick="rejectDeposit('${d.id}')">Reject</button>
-   </div>`;
- });
-}
-
-window.approveDeposit=async(id,uid,amt)=>{
- await updateDoc(doc(db,"payments",id),{status:"approved"});
- await updateDoc(doc(db,"users",uid),{balance:increment(amt)});
- location.reload();
-};
-
-window.rejectDeposit=async(id)=>{
- await updateDoc(doc(db,"payments",id),{status:"rejected"});
- location.reload();
-};
-
-/* 🏧 WITHDRAW WITH TIME + BANK/UPI */
-function renderWithdraws(snapshot){
- withdrawList.innerHTML="";
- snapshot.forEach(d=>{
-  const x=d.data();
-  if((x.status||"").toLowerCase()!=="pending") return;
-
-  let details="";
-  if((x.method||"").toUpperCase()==="BANK" && x.bank){
-    details=`
-     <b>Method:</b> BANK<br>
-     <b>Name:</b> ${x.bank.name}<br>
-     <b>Account:</b> ${x.bank.acc}<br>
-     <b>IFSC:</b> ${x.bank.ifsc}<br>
-     <b>Bank:</b> ${x.bank.bank}<br>
-    `;
-  }
-
-  if((x.method||"").toUpperCase()==="UPI"){
-    details=`
-     <b>Method:</b> UPI<br>
-     <b>UPI ID:</b> ${x.upi}
-    `;
-  }
-
-  withdrawList.innerHTML+=`
-   <div class="req">
-    <b>User:</b> ${x.uid}<br>
-    <b>Amount:</b> ₹${x.amount}<br>
-    <div class="time">🕒 ${formatTime(x.createdAt)}</div>
-    ${details}
-    <button class="approve" onclick="approveWithdraw('${d.id}')">Approve</button>
-    <button class="reject" onclick="rejectWithdraw('${d.id}')">Reject</button>
-   </div>`;
- });
-}
-
-window.approveWithdraw=async(id)=>{
- await updateDoc(doc(db,"withdrawRequests",id),{status:"approved"});
- location.reload();
-};
-
-window.rejectWithdraw=async(id)=>{
- await updateDoc(doc(db,"withdrawRequests",id),{status:"rejected"});
- location.reload();
-};
-
-async function loadUsers(){
- const snap=await getDocs(collection(db,"users"));
- userList.innerHTML="";
- snap.forEach(d=>{
-  const u=d.data();
-  userList.innerHTML+=`
-   <div class="req">
-    <b>${u.email || "No Email"}</b><br>
-    Balance: ₹${u.balance||0}
-   </div>`;
- });
-}
-</script>
-
-</body>
-</html>
+<div
