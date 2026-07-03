@@ -692,3 +692,222 @@ id="saveSpinSettings">
 </div>
 
 <div
+  <!-- ================= DEPOSIT REQUESTS ================= -->
+
+<div class="section">
+
+<div class="section-title">
+
+💰 Deposit Requests
+
+</div>
+
+<div id="depositRequests">
+
+Loading deposits...
+
+</div>
+
+</div>
+
+<!-- ================= WITHDRAW REQUESTS ================= -->
+
+<div class="section">
+
+<div class="section-title">
+
+🏧 Withdraw Requests
+
+</div>
+
+<div id="withdrawRequests">
+
+Loading withdraws...
+
+</div>
+
+</div>
+
+</div> <!-- container end -->
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs,
+doc,
+updateDoc,
+getDoc,
+setDoc
+} from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+authDomain:"earncash7-f0ecc.firebaseapp.com",
+projectId:"earncash7-f0ecc",
+appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ================= LOAD SETTINGS ================= */
+
+async function loadSettings(){
+
+const snap = await getDoc(doc(db,"admin","spinControl"));
+const wSnap = await getDoc(doc(db,"admin","withdrawControl"));
+
+if(snap.exists()){
+
+const s = snap.data();
+
+spinCost.value = s.spinCost || 0;
+
+houseEdge.value = s.houseEdge || 0;
+
+maxWin.value = s.maxWin || 0;
+
+dailyUserMaxWin.value = s.dailyUserMaxWin || 0;
+
+smallWinMin.value = s.smallWinMin || 0;
+
+smallWinMax.value = s.smallWinMax || 0;
+
+mediumWinMin.value = s.mediumWinMin || 0;
+
+mediumWinMax.value = s.mediumWinMax || 0;
+
+bigWinMin.value = s.bigWinMin || 0;
+
+bigWinMax.value = s.bigWinMax || 0;
+
+smallWinChance.value = s.smallWinChance || 0;
+
+mediumWinChance.value = s.mediumWinChance || 0;
+
+bigWinChance.value = s.bigWinChance || 0;
+
+}
+
+if(wSnap.exists()){
+
+const w = wSnap.data();
+
+minWithdraw.value = w.minWithdraw || 0;
+
+maxWithdraw.value = w.maxWithdraw || 0;
+
+dailyLimit.value = w.dailyLimit || 0;
+
+}
+
+}
+
+loadSettings();
+
+/* ================= SAVE SETTINGS ================= */
+
+saveSpinSettings.onclick = async () => {
+
+await setDoc(doc(db,"admin","spinControl"),{
+
+spinCost:Number(spinCost.value),
+
+houseEdge:Number(houseEdge.value),
+
+maxWin:Number(maxWin.value),
+
+dailyUserMaxWin:Number(dailyUserMaxWin.value),
+
+smallWinMin:Number(smallWinMin.value),
+
+smallWinMax:Number(smallWinMax.value),
+
+mediumWinMin:Number(mediumWinMin.value),
+
+mediumWinMax:Number(mediumWinMax.value),
+
+bigWinMin:Number(bigWinMin.value),
+
+bigWinMax:Number(bigWinMax.value),
+
+smallWinChance:Number(smallWinChance.value),
+
+mediumWinChance:Number(mediumWinChance.value),
+
+bigWinChance:Number(bigWinChance.value)
+
+});
+
+alert("Spin settings saved");
+
+};
+
+saveWithdrawSettings.onclick = async () => {
+
+await setDoc(doc(db,"admin","withdrawControl"),{
+
+minWithdraw:Number(minWithdraw.value),
+
+maxWithdraw:Number(maxWithdraw.value),
+
+dailyLimit:Number(dailyLimit.value)
+
+});
+
+alert("Withdraw settings saved");
+
+};
+
+/* ================= LOAD USERS ================= */
+
+async function loadUsers(){
+
+const snap = await getDocs(collection(db,"users"));
+
+let html = "";
+
+snap.forEach(d=>{
+
+const u = d.data();
+
+html += `
+
+<div class="userCard">
+
+<div class="userTitle">${u.name || "No Name"}</div>
+
+<div class="userInfo">
+
+UID: ${d.id}<br>
+
+Email: ${u.email || "-"}<br>
+
+Balance: ₹${u.balance || 0}<br>
+
+Earned: ₹${u.totalEarned || 0}
+
+</div>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("userList").innerHTML = html;
+
+}
+
+loadUsers();
+
+</script>
+
+</body>
+</html>
