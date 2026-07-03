@@ -2,280 +2,174 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RozanaCash Spin</title>
+<title>Spin Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#f2f2f2;padding-bottom:90px;}
-.header{background:#5e239d;color:#fff;text-align:center;padding:14px;font-size:20px;}
-.card{background:#5e239d;color:white;margin:15px;border-radius:16px;padding:15px;display:flex;justify-content:space-between;}
-.card button{background:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:bold;}
-.wheel-box{text-align:center;margin-top:20px}
-canvas{margin-top:10px}
-.spin-btn{margin-top:20px;background:#ffcc00;border:none;padding:14px 40px;border-radius:30px;font-size:18px;font-weight:bold;}
-.back a{text-decoration:none;color:#5e239d;font-weight:bold}
-
-.bottom-nav{
- position:fixed;bottom:0;left:0;right:0;
- background:#5e239d;display:flex;justify-content:space-around;
- padding:12px 0;border-radius:20px 20px 0 0;
-}
-.bottom-nav button{
- background:white;border:none;padding:10px 18px;
- border-radius:25px;font-weight:bold;
-}
-
-#resultPopup{
- display:none;position:fixed;top:0;left:0;right:0;bottom:0;
- background:rgba(0,0,0,0.6);z-index:999;
- justify-content:center;align-items:center;
-}
-#resultBox{
- background:white;padding:30px;border-radius:18px;
- text-align:center;width:260px;
- animation:pop .4s ease-out;
-}
-@keyframes pop{
- from{transform:scale(.5);opacity:0}
- to{transform:scale(1);opacity:1}
-}
+body{margin:0;font-family:Arial;background:#f3f3f3;text-align:center}
+.header{background:#5e239d;color:#fff;padding:15px;font-size:20px}
+.card{margin:15px;background:#fff;padding:15px;border-radius:12px}
+canvas{margin-top:20px}
+button{background:#5e239d;color:#fff;border:none;padding:14px 40px;border-radius:30px;margin-top:20px;font-size:18px}
+#popup{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);justify-content:center;align-items:center}
+#box{background:#fff;padding:25px;border-radius:15px}
 </style>
 </head>
 
 <body>
 
-<div class="header">RozanaCash</div>
+<div class="header">🎡 Spin Wheel</div>
 
 <div class="card">
- <div>
-  Wallet ₹<span id="wallet">0</span><br>
-  <button onclick="deposit()">More Spin</button>
- </div>
- <div>
-  Winning ₹<span id="winning">0</span><br>
-  <button onclick="withdraw()">Withdraw</button>
- </div>
+Wallet: ₹<span id="wallet">0</span><br>
+Winning: ₹<span id="winning">0</span>
 </div>
 
-<div class="wheel-box">
- <canvas id="wheel" width="300" height="300"></canvas><br>
- <button class="spin-btn" id="spinBtn">SPIN</button>
+<canvas id="wheel" width="300" height="300"></canvas>
 
- <div class="back">
-  <a href="dashboard.html">← Back to Dashboard</a>
- </div>
+<br>
+<button id="spinBtn">SPIN</button>
 
- <!-- 🏆 LEADERBOARD BUTTON -->
- <button class="spin-btn" id="leaderboardBtn" style="background:#fff;color:#5e239d;margin-top:10px">
-  🏆 Today’s Winners
- </button>
+<div id="popup">
+<div id="box">
+<h2 id="result">₹0</h2>
+<p>Result</p>
 </div>
-
-<div class="bottom-nav">
- <button onclick="location.href='dashboard.html'">🏠 Home</button>
- <button onclick="location.href='history.html'">📜 History</button>
- <button onclick="location.href='profile.html'">👤 Profile</button>
 </div>
+ <script type="module">
 
-<div id="resultPopup">
- <div id="resultBox">
-  <h2 id="resultAmount" style="color:#5e239d;margin:0">₹0</h2>
-  <p style="margin-top:10px;font-weight:bold">Spin Result</p>
- </div>
-</div>
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-<!-- 🏆 LEADERBOARD POPUP -->
-<div id="leaderboard" style="
-display:none;
-position:fixed;
-top:0;left:0;right:0;bottom:0;
-background:rgba(0,0,0,0.6);
-z-index:1000;
-justify-content:center;
-align-items:center;
-">
- <div style="
- background:white;
- width:90%;
- max-width:320px;
- border-radius:16px;
- padding:20px;
- ">
-  <h3 style="margin:0 0 10px;color:#5e239d">🏆 Today’s Winners</h3>
-  <div id="leaderboardList"></div>
+import {
+getAuth,
+onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  <button onclick="leaderboard.style.display='none'"
-  style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:10px;background:#5e239d;color:white">
-   Close
-  </button>
- </div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,doc,getDoc,updateDoc,increment } from
+import {
+getFirestore,
+doc,
+getDoc,
+updateDoc
+} from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig={
- apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
- authDomain:"earncash7-f0ecc.firebaseapp.com",
- projectId:"earncash7-f0ecc",
- appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
+const firebaseConfig = {
+apiKey:"AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
+authDomain:"earncash7-f0ecc.firebaseapp.com",
+projectId:"earncash7-f0ecc",
+appId:"1:1017767289580:web:56ecbedc90fe167d3dbbc9"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const canvas=document.getElementById("wheel");
-const ctx=canvas.getContext("2d");
-const cx=150,cy=150,radius=140;
 let userRef;
+let settings = {};
 
-// 🎡 Wheel UI
-const slices=[-60,-20,20,40,60,100,150,200];
-const colors=["#4a148c","#6a1bb1","#7b2cbf","#8e44ad","#9b59b6","#6a1bb1","#7b2cbf","#4a148c"];
+/* ========= USER LOAD ========= */
 
-function drawWheel(){
- const arc=2*Math.PI/slices.length;
- ctx.clearRect(0,0,300,300);
- slices.forEach((val,i)=>{
-  const angle=i*arc;
-  ctx.beginPath();
-  ctx.fillStyle=colors[i];
-  ctx.moveTo(cx,cy);
-  ctx.arc(cx,cy,radius,angle,angle+arc);
-  ctx.fill();
+onAuthStateChanged(auth, async(user)=>{
 
-  ctx.save();
-  ctx.translate(cx,cy);
-  ctx.rotate(angle+arc/2);
-  ctx.fillStyle="#fff";
-  ctx.font="bold 16px Arial";
-  ctx.textAlign="right";
-  ctx.fillText(val, radius-10,5);
-  ctx.restore();
- });
-}
-drawWheel();
-
-// 🔥 ADMIN CONTROL
-async function getSpinControl(){
- const snap=await getDoc(doc(db,"admin","spinControl"));
- return snap.data();
+if(!user){
+location.href="index.html";
+return;
 }
 
-function todayDate(){
- const d=new Date();
- return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-}
+userRef = doc(db,"users",user.uid);
 
-onAuthStateChanged(auth,async user=>{
- if(!user){location.href="index.html";return;}
- userRef=doc(db,"users",user.uid);
- const snap=await getDoc(userRef);
- wallet.innerText=snap.data().balance;
- winning.innerText=snap.data().totalEarned;
+const snap = await getDoc(userRef);
+
+wallet.innerText = snap.data().balance || 0;
+winning.innerText = snap.data().totalEarned || 0;
+
 });
 
-spinBtn.onclick=async()=>{
- const control=await getSpinControl();
- const spinCost=control.spinCost;
- const winPercent=control.winPercent;
- const maxWin=control.maxWin;
- const dailyUserMaxWin=control.dailyUserMaxWin;
+/* ========= SETTINGS LOAD ========= */
 
- const snap=await getDoc(userRef);
- let user=snap.data();
+async function loadSettings(){
 
- if(user.balance < spinCost){
-  alert("❌ Minimum "+spinCost+" coins required");
-  return;
- }
+const snap = await getDoc(doc(db,"admin","spinControl"));
 
- const today=todayDate();
- let dailyWin=user.dailyWin||0;
- let lastWinDate=user.lastWinDate||"";
-
- if(lastWinDate!==today){
-  dailyWin=0;
-  await updateDoc(userRef,{dailyWin:0,lastWinDate:today});
- }
-
- let reward=0;
- const chance=Math.random()*100;
-
- if(chance < winPercent && dailyWin < dailyUserMaxWin){
-  reward=Math.floor(Math.random()*(maxWin-10+1))+10;
-  if(dailyWin+reward > dailyUserMaxWin){
-   reward=dailyUserMaxWin-dailyWin;
-  }
- }else{
-  reward=-spinCost;
- }
-
- const spins=5;
- const rotateTo=spins*360+Math.floor(Math.random()*360);
- canvas.style.transition="none";
- canvas.style.transform="rotate(0deg)";
- setTimeout(()=>{
-  canvas.style.transition="transform 4s cubic-bezier(.25,.1,.25,1)";
-  canvas.style.transform=`rotate(${rotateTo}deg)`;
- },50);
-
- await updateDoc(userRef,{
-  balance:increment(-spinCost+reward),
-  totalEarned:increment(reward>0?reward:0),
-  dailyWin:increment(reward>0?reward:0),
-  lastWinDate:today
- });
-
- setTimeout(async()=>{
-  const s=await getDoc(userRef);
-  wallet.innerText=s.data().balance;
-  winning.innerText=s.data().totalEarned;
-  resultAmount.innerText="₹"+reward;
-  resultPopup.style.display="flex";
-  setTimeout(()=>resultPopup.style.display="none",2000);
- },4000);
-};
-
-window.deposit=()=>location.href="deposit.html";
-window.withdraw=()=>location.href="withdraw.html";
-</script>
-
-<!-- 🏆 FAKE LEADERBOARD SCRIPT -->
-<script>
-const fakeUsers=["User4821","User7784","User1290","User8842","User3001","User6590","User9102","User4420"];
-
-function randAmt(){return Math.floor(Math.random()*1000)+200;}
-function randTime(){
- const t=["Just now","1 min ago","2 min ago","5 min ago"];
- return t[Math.floor(Math.random()*t.length)];
+if(snap.exists()){
+settings = snap.data();
 }
 
-function loadLeaderboard(){
- leaderboardList.innerHTML="";
- for(let i=0;i<5;i++){
-  leaderboardList.innerHTML+=`
-   <p style="margin:6px 0">
-    👤 <b>${fakeUsers[Math.floor(Math.random()*fakeUsers.length)]}</b>
-    — ₹${randAmt()}
-    <span style="float:right;color:gray;font-size:12px">${randTime()}</span>
-   </p>`;
- }
 }
 
-leaderboardBtn.onclick=()=>{
- leaderboard.style.display="flex";
- loadLeaderboard();
+loadSettings();
+
+/* helper */
+function rand(min,max){
+return Math.floor(Math.random()*(max-min+1))+min;
+}spinBtn.onclick = async () => {
+
+const snap = await getDoc(userRef);
+let user = snap.data();
+
+if(user.balance < settings.spinCost){
+alert("Not enough balance");
+return;
+}
+
+/* ===== HOUSE EDGE ===== */
+
+let winChance = Math.random()*100;
+let reward = 0;
+
+/* LOSS */
+if(winChance < settings.houseEdge){
+reward = -settings.spinCost;
+}
+
+/* WIN */
+else{
+
+let r = Math.random()*100;
+
+if(r < settings.smallWinChance){
+reward = rand(settings.smallWinMin, settings.smallWinMax);
+}
+else if(r < settings.smallWinChance + settings.mediumWinChance){
+reward = rand(settings.mediumWinMin, settings.mediumWinMax);
+}
+else{
+reward = rand(settings.bigWinMin, settings.bigWinMax);
+}
+
+if(reward > settings.maxWin){
+reward = settings.maxWin;
+}
+
+}
+
+/* animation */
+let deg = 1800 + Math.random()*360;
+wheel.style.transition="4s";
+wheel.style.transform=`rotate(${deg}deg)`;
+
+/* update DB */
+await updateDoc(userRef,{
+balance:user.balance + reward,
+totalEarned:(user.totalEarned||0) + (reward>0?reward:0)
+});
+
+/* UI */
+setTimeout(async()=>{
+
+let u = await getDoc(userRef);
+
+wallet.innerText = u.data().balance;
+winning.innerText = u.data().totalEarned;
+
+result.innerText = "₹"+reward;
+popup.style.display="flex";
+
+setTimeout(()=>popup.style.display="none",2000);
+
+},4000);
+
 };
-
-setInterval(()=>{
- if(leaderboard.style.display==="flex") loadLeaderboard();
-},5000);
-</script>
-
-</body>
-</html>
+  
