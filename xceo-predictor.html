@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The XCEO Predictor</title>
+<style>
+body{margin:0;font-family:Arial;background:#090909;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;background-image:radial-gradient(#1d3,#000)}
+.card{width:min(95%,420px);background:rgba(255,255,255,.08);padding:20px;border-radius:18px;box-shadow:0 0 25px #0ff3}
+h1{text-align:center;color:gold}
+input{width:30%;padding:10px;margin:5px;border-radius:8px;border:none;text-align:center}
+button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:10px;background:gold;font-weight:bold;cursor:pointer}
+#out{margin-top:15px;padding:10px;border:1px solid #555;border-radius:10px;display:none}
+a.reg{display:block;text-align:center;margin-top:15px;padding:12px;background:#00c853;color:#fff;text-decoration:none;border-radius:10px}
+#popup{position:fixed;inset:0;background:#000c;display:flex;justify-content:center;align-items:center}
+#pop{background:#222;padding:20px;border-radius:12px;max-width:320px;text-align:center}
+</style></head>
+<body>
+<div id="popup"><div id="pop"><h2>Welcome to The XCEO Predictor</h2><p>Demo UI for entertainment and analysis only.</p><button onclick="popup.style.display='none'">OK</button></div></div>
+<div class="card">
+<h1>The XCEO Predictor</h1>
+<p>Enter Last 3 Numbers</p>
+<div><input id=a><input id=b><input id=c></div>
+<button onclick="go()">CHECK NEXT PREDICTION</button>
+<div id="out"></div>
+<a class="reg" href="https://2xclubcanada.xyz/#/register?invitationCode=421396086256" target="_blank">REGISTER NOW</a>
+</div>
+<script>
+function r(x){return x[Math.floor(Math.random()*x.length)]}
+function go(){
+let o=document.getElementById('out');
+o.style.display='block';
+o.innerHTML="<b>Analyzing...</b>";
+setTimeout(()=>{
+o.innerHTML="<h3>Demo Analysis</h3>"
++"<p><b>Big/Small:</b> "+r(["BIG","SMALL"])+"</p>"
++"<p><b>Color:</b> "+r(["RED","GREEN","VIOLET"])+"</p>"
++"<p><b>Number:</b> "+Math.floor(Math.random()*10)+"</p>";
+},1200);
+}
+</script>
+</body></html>
