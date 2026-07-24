@@ -74,83 +74,95 @@
 
     .account-card{
       display:grid;
-      grid-template-columns:1.35fr .9fr .9fr;
+      grid-template-columns:minmax(0,1.55fr) minmax(78px,.76fr) minmax(86px,.84fr);
       gap:10px;
       align-items:center;
-      padding:14px;
-      border-radius:23px;
+      min-height:118px;
+      padding:13px 12px;
+      border:3px solid #b640ee;
+      border-radius:25px;
       background:#fff;
-      box-shadow:var(--shadow);
+      box-shadow:0 13px 28px rgba(53,25,90,.15);
       margin-bottom:14px;
+      overflow:hidden;
     }
 
     .balance-box{
       min-width:0;
+      height:100%;
       display:flex;
       align-items:center;
-      gap:10px;
-      padding-right:8px;
+      gap:9px;
+      padding-right:5px;
+      border-right:1px solid #e8e3ec;
     }
 
     .wallet-image{
-      width:64px;
-      height:64px;
-      flex:0 0 64px;
+      width:72px;
+      height:72px;
+      flex:0 0 72px;
       object-fit:contain;
+      display:block;
+    }
+
+    .wallet-fallback{
+      width:72px;
+      height:72px;
+      flex:0 0 72px;
+      display:none;
+      place-items:center;
+      font-size:48px;
+      line-height:1;
     }
 
     .balance-copy{
       min-width:0;
+      overflow:hidden;
     }
 
     .balance-copy small{
       display:block;
-      font-size:12px;
-      font-weight:800;
-      color:#252d45;
-      margin-bottom:3px;
+      margin-bottom:5px;
+      color:#17213b;
+      font-size:clamp(12px,3.4vw,16px);
+      line-height:1.15;
+      font-weight:900;
       white-space:nowrap;
     }
 
     .balance-amount{
-      font-size:clamp(22px,6vw,31px);
-      font-weight:900;
+      color:#17213b;
+      font-size:clamp(24px,7.2vw,38px);
       line-height:1;
-      letter-spacing:-.8px;
+      font-weight:950;
+      letter-spacing:-1px;
       white-space:nowrap;
     }
 
     .quick-btn{
-      min-height:76px;
-      border:0;
-      border-radius:17px;
-      display:flex;
-      justify-content:center;
-      align-items:flex-end;
-      color:#fff;
-      font-size:11px;
-      font-weight:900;
-      cursor:pointer;
-      overflow:hidden;
-      position:relative;
-      box-shadow:0 8px 16px rgba(40,20,80,.16);
-      transition:transform .18s ease, filter .2s ease;
-      isolation:isolate;
+      width:100%;
+      aspect-ratio:1 / .93;
+      min-height:84px;
       padding:0;
-      background:#ddd;
+      border:0;
+      border-radius:18px;
+      display:block;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+      background:transparent;
+      box-shadow:0 8px 14px rgba(38,17,70,.18);
+      transition:transform .18s ease, filter .2s ease, box-shadow .2s ease;
     }
 
+    .quick-btn::before,
     .quick-btn::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:linear-gradient(120deg,transparent 20%,rgba(255,255,255,.24),transparent 70%);
-      transform:translateX(-130%);
-      transition:transform .55s ease;
+      display:none;
     }
 
-    .quick-btn:hover::after{
-      transform:translateX(130%);
+    .quick-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 20px rgba(38,17,70,.23);
     }
 
     .quick-btn:active{
@@ -162,35 +174,22 @@
       inset:0;
       width:100%;
       height:100%;
-      object-fit:cover;
-      object-position:center;
-      z-index:-2;
       display:block;
-    }
-
-    .quick-btn::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      z-index:-1;
-      background:linear-gradient(to top,rgba(20,0,45,.72),rgba(20,0,45,.06) 62%);
+      object-fit:fill;
+      object-position:center;
+      border-radius:inherit;
     }
 
     .quick-btn span{
-      width:100%;
-      padding:7px 4px 8px;
-      text-align:center;
-      text-shadow:0 2px 5px rgba(0,0,0,.55);
-      position:relative;
-      z-index:2;
+      display:none;
     }
 
     .deposit-btn{
-      background:linear-gradient(145deg,#58dc00,#04a00b);
+      background:linear-gradient(145deg,#57db00,#049d0a);
     }
 
     .withdraw-btn{
-      background:linear-gradient(145deg,#a72ff5,#5909bb);
+      background:linear-gradient(145deg,#aa31f7,#5708b9);
     }
 
     .winner-row{
@@ -469,23 +468,31 @@
       }
 
       .account-card{
-        padding:10px;
+        grid-template-columns:minmax(0,1.52fr) 76px 82px;
+        min-height:108px;
+        padding:11px 9px;
         gap:7px;
       }
 
-      .wallet-image{
-        width:54px;
-        height:54px;
-        flex-basis:54px;
+      .wallet-image,
+      .wallet-fallback{
+        width:58px;
+        height:58px;
+        flex-basis:58px;
+      }
+
+      .wallet-fallback{
+        font-size:40px;
+      }
+
+      .balance-box{
+        gap:7px;
+        padding-right:4px;
       }
 
       .quick-btn{
-        min-height:68px;
-      }
-
-      .quick-btn img{
-        width:100%;
-        height:100%;
+        min-height:78px;
+        border-radius:16px;
       }
     }
 
@@ -510,9 +517,9 @@
           class="wallet-image"
           src="images/wallet-icon.png"
           alt="Wallet"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='block';"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
         />
-        <div style="display:none;font-size:48px" aria-hidden="true">👛</div>
+        <div class="wallet-fallback" aria-label="Wallet">🏦</div>
 
         <div class="balance-copy">
           <small>Wallet Balance</small>
@@ -520,12 +527,12 @@
         </div>
       </div>
 
-      <button id="depositBtn" class="quick-btn deposit-btn" type="button">
+      <button id="depositBtn" class="quick-btn deposit-btn" type="button" aria-label="Deposit">
         <img src="images/IMG_20260724_194326.png" alt="Deposit" />
         <span>DEPOSIT</span>
       </button>
 
-      <button id="withdrawBtn" class="quick-btn withdraw-btn" type="button">
+      <button id="withdrawBtn" class="quick-btn withdraw-btn" type="button" aria-label="Withdrawal">
         <img src="images/IMG_20260724_194411.png" alt="Withdrawal" />
         <span>WITHDRAWAL</span>
       </button>
