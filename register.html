@@ -518,42 +518,35 @@
 
   <script type="module">
     /*
-      FIREBASE SETUP:
-      1. Firebase Console > Project Settings > Your apps > Web app.
-      2. Copy your firebaseConfig and replace the values below.
-      3. Firebase Authentication > Sign-in method > Enable Email/Password.
-      4. Firestore Database > Create database.
+      IMPORTANT:
+      Keep firebase-config.js in the same folder as this register.html file.
+
+      Required Firebase setup:
+      1. Authentication > Sign-in method > Enable Email/Password.
+      2. Firestore Database > Create database.
     */
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getAuth,
+      auth,
+      db,
+      USERS_COLLECTION
+    } from "./firebase-config.js";
+
+    import {
       createUserWithEmailAndPassword,
       sendEmailVerification,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+      signOut,
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
     import {
-      getFirestore,
       doc,
       getDoc,
       setDoc,
       updateDoc,
       increment,
       serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "PASTE_YOUR_API_KEY",
-      authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "PASTE_YOUR_PROJECT_ID",
-      storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-      appId: "PASTE_YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const form = document.getElementById("registerForm");
     const emailInput = document.getElementById("email");
@@ -598,7 +591,9 @@
 
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       const passwordValid = password.length >= 6;
-      const confirmValid = confirmPassword === password && confirmPassword.length >= 6;
+      const confirmValid =
+        confirmPassword.length >= 6 &&
+        confirmPassword === password;
 
       markInvalid(fields.email, !emailValid);
       markInvalid(fields.password, !passwordValid);
@@ -608,7 +603,9 @@
     }
 
     async function validateInviteCode(inviteCode) {
-      if (!inviteCode) return null;
+      if (!inviteCode) {
+        return null;
+      }
 
       const inviteRef = doc(db, "inviteCodes", inviteCode);
       const inviteSnap = await getDoc(inviteRef);
@@ -617,39 +614,45 @@
         throw new Error("invalid-invite");
       }
 
-      const data = inviteSnap.data();
+      const inviteData = inviteSnap.data();
 
-      if (data.active === false) {
+      if (inviteData.active === false) {
         throw new Error("invalid-invite");
       }
 
       return {
         ref: inviteRef,
-        data
+        data: inviteData
       };
+    }
+
+    function createInviteCode(uid) {
+      return uid.slice(0, 8).toUpperCase();
     }
 
     document.querySelectorAll(".eye-btn").forEach((button) => {
       button.addEventListener("click", () => {
         const input = document.getElementById(button.dataset.toggle);
-        const isHidden = input.type === "password";
+        const showPassword = input.type === "password";
 
-        input.type = isHidden ? "text" : "password";
+        input.type = showPassword ? "text" : "password";
+
         button.setAttribute(
           "aria-label",
-          isHidden ? "Hide password" : "Show password"
+          showPassword ? "Hide password" : "Show password"
         );
       });
     });
 
-    [emailInput, passwordInput, confirmPasswordInput].forEach((input) => {
-      input.addEventListener("input", validateForm);
-    });
+    emailInput.addEventListener("input", validateForm);
+    passwordInput.addEventListener("input", validateForm);
+    confirmPasswordInput.addEventListener("input", validateForm);
 
     inviteInput.addEventListener("input", () => {
       inviteInput.value = inviteInput.value
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, "");
+
       markInvalid(fields.invite, false);
     });
 
@@ -665,15 +668,13 @@
       const password = passwordInput.value;
       const inviteCode = inviteInput.value.trim().toUpperCase();
 
+      let createdUser = null;
+
       setLoading(true);
       markInvalid(fields.invite, false);
 
       try {
-        let inviter = null;
-
-        if (inviteCode) {
-          inviter = await validateInviteCode(inviteCode);
-        }
+        const inviter = await validateInviteCode(inviteCode);
 
         const credential = await createUserWithEmailAndPassword(
           auth,
@@ -681,16 +682,18 @@
           password
         );
 
-        const user = credential.user;
+        createdUser = credential.user;
 
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email,
+        const ownInviteCode = createInviteCode(createdUser.uid);
+
+        await setDoc(doc(db, USERS_COLLECTION, createdUser.uid), {
+          uid: createdUser.uid,
+          email: email,
           balance: 0,
           totalEarnings: 0,
           referralEarnings: 0,
           referredByCode: inviteCode || null,
-          ownInviteCode: user.uid.slice(0, 8).toUpperCase(),
+          ownInviteCode: ownInviteCode,
           accountStatus: "active",
           role: "user",
           emailVerified: false,
@@ -698,12 +701,13 @@
           updatedAt: serverTimestamp()
         });
 
-        await setDoc(doc(db, "inviteCodes", user.uid.slice(0, 8).toUpperCase()), {
-          ownerUid: user.uid,
+        await setDoc(doc(db, "inviteCodes", ownInviteCode), {
+          ownerUid: createdUser.uid,
           ownerEmail: email,
           active: true,
           totalReferrals: 0,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
         });
 
         if (inviter) {
@@ -713,31 +717,46 @@
           });
 
           await setDoc(
-            doc(db, "referrals", `${inviteCode}_${user.uid}`),
+            doc(db, "referrals", `${inviteCode}_${createdUser.uid}`),
             {
-              inviteCode,
-              invitedUserUid: user.uid,
+              inviteCode: inviteCode,
+              invitedUserUid: createdUser.uid,
               invitedUserEmail: email,
               referrerUid: inviter.data.ownerUid || null,
               status: "registered",
               rewardGiven: false,
-              createdAt: serverTimestamp()
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
             }
           );
         }
 
-        await sendEmailVerification(user);
+        await sendEmailVerification(createdUser);
         await signOut(auth);
 
-        showToast("Account created. Verification email sent.", "success");
         form.reset();
+        showToast(
+          "Account created. Verification email has been sent.",
+          "success"
+        );
 
         setTimeout(() => {
           window.location.href = "login.html";
         }, 1800);
-
       } catch (error) {
-        console.error(error);
+        console.error("Registration error:", error);
+
+        if (
+          createdUser &&
+          error.message !== "invalid-invite" &&
+          error.code !== "auth/email-already-in-use"
+        ) {
+          try {
+            await deleteUser(createdUser);
+          } catch (deleteError) {
+            console.error("Auth rollback failed:", deleteError);
+          }
+        }
 
         if (error.message === "invalid-invite") {
           markInvalid(fields.invite, true);
@@ -747,20 +766,30 @@
           showToast("This email is already registered.", "error");
         } else if (error.code === "auth/invalid-email") {
           markInvalid(fields.email, true);
-          showToast("Please enter a valid email.", "error");
+          showToast("Please enter a valid email address.", "error");
         } else if (error.code === "auth/weak-password") {
           markInvalid(fields.password, true);
-          showToast("Please choose a stronger password.", "error");
+          showToast("Password must contain at least 6 characters.", "error");
+        } else if (error.code === "auth/network-request-failed") {
+          showToast("Network error. Check your internet connection.", "error");
+        } else if (error.code === "auth/operation-not-allowed") {
+          showToast(
+            "Enable Email/Password sign-in from Firebase Authentication.",
+            "error"
+          );
         } else if (
-          error.code === "auth/network-request-failed"
+          error.code === "permission-denied" ||
+          error.code === "firestore/permission-denied"
         ) {
-          showToast("Network error. Please check your internet.", "error");
-        } else if (
-          String(error.message).includes("PASTE_YOUR")
-        ) {
-          showToast("First add your Firebase config in this file.", "error");
+          showToast(
+            "Firestore rules are blocking registration.",
+            "error"
+          );
         } else {
-          showToast(error.message || "Registration failed. Try again.", "error");
+          showToast(
+            error.message || "Registration failed. Please try again.",
+            "error"
+          );
         }
       } finally {
         setLoading(false);
