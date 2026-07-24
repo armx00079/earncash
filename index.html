@@ -148,11 +148,11 @@
       border-radius:18px;
       display:block;
       position:relative;
-      overflow:hidden;
+      overflow:visible;
       cursor:pointer;
       background:transparent;
-      box-shadow:0 8px 14px rgba(38,17,70,.18);
-      transition:transform .18s ease, filter .2s ease, box-shadow .2s ease;
+      box-shadow:none;
+      transition:transform .18s ease, filter .2s ease;
     }
 
     .quick-btn::before,
@@ -162,7 +162,6 @@
 
     .quick-btn:hover{
       transform:translateY(-2px);
-      box-shadow:0 12px 20px rgba(38,17,70,.23);
     }
 
     .quick-btn:active{
@@ -175,21 +174,18 @@
       width:100%;
       height:100%;
       display:block;
-      object-fit:fill;
+      object-fit:contain;
       object-position:center;
-      border-radius:inherit;
+      border-radius:18px;
     }
 
     .quick-btn span{
       display:none;
     }
 
-    .deposit-btn{
-      background:linear-gradient(145deg,#57db00,#049d0a);
-    }
-
+    .deposit-btn,
     .withdraw-btn{
-      background:linear-gradient(145deg,#aa31f7,#5708b9);
+      background:transparent;
     }
 
     .winner-row{
@@ -585,7 +581,7 @@
         <button id="spinBtn" class="center-button" type="button">SPIN</button>
       </div>
 
-      <div class="spin-info">Demo spin cost: ₹20</div>
+      <div class="spin-info">Spin cost: ₹20</div>
     </section>
   </main>
 
@@ -641,7 +637,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const DEMO_SPIN_COST = 20;
+    const SPIN_COST = 20;
     const rewards = [10, 20, 25, 9, 50, 46, 17, 8, 6, 120];
     const names = [
       "Rahul", "Aman", "Priya", "Arjun", "Neha",
@@ -734,11 +730,11 @@
         const data = userSnap.data();
         const balance = Number(data.balance || 0);
 
-        if (balance < DEMO_SPIN_COST) {
+        if (balance < SPIN_COST) {
           throw new Error("insufficient-balance");
         }
 
-        const updatedBalance = balance - DEMO_SPIN_COST + reward;
+        const updatedBalance = balance - SPIN_COST + reward;
 
         transaction.update(userRef, {
           balance: updatedBalance,
@@ -752,11 +748,11 @@
       await addDoc(collection(db, SPIN_HISTORY_COLLECTION), {
         userId: currentUser.uid,
         email: currentUser.email || "",
-        spinCost: DEMO_SPIN_COST,
+        spinCost: SPIN_COST,
         reward: reward,
         segmentIndex: selectedIndex,
         balanceAfter: newBalance,
-        type: "demo_spin",
+        type: "spin",
         createdAt: serverTimestamp()
       });
 
@@ -768,8 +764,8 @@
         return;
       }
 
-      if (currentBalance < DEMO_SPIN_COST) {
-        showToast("Minimum ₹20 demo balance is required.", "error");
+      if (currentBalance < SPIN_COST) {
+        showToast("Minimum ₹20 balance is required.", "error");
         return;
       }
 
@@ -793,7 +789,7 @@
           spinning = false;
 
           showToast(
-            `₹${DEMO_SPIN_COST} cost deducted. You received ₹${reward}.`,
+            `₹${SPIN_COST} cost deducted. You received ₹${reward}.`,
             "success"
           );
         }, 5700);
@@ -806,7 +802,7 @@
           spinning = false;
 
           if (error.message === "insufficient-balance") {
-            showToast("Your demo balance is below ₹20.", "error");
+            showToast("Your balance is below ₹20.", "error");
           } else if (
             error.code === "permission-denied" ||
             error.code === "firestore/permission-denied"
