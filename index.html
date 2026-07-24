@@ -122,13 +122,11 @@
 
     .quick-btn{
       min-height:76px;
-      border:2px solid rgba(255,255,255,.52);
+      border:0;
       border-radius:17px;
       display:flex;
-      flex-direction:column;
       justify-content:center;
-      align-items:center;
-      gap:4px;
+      align-items:flex-end;
       color:#fff;
       font-size:11px;
       font-weight:900;
@@ -137,6 +135,9 @@
       position:relative;
       box-shadow:0 8px 16px rgba(40,20,80,.16);
       transition:transform .18s ease, filter .2s ease;
+      isolation:isolate;
+      padding:0;
+      background:#ddd;
     }
 
     .quick-btn::after{
@@ -157,10 +158,31 @@
     }
 
     .quick-btn img{
-      width:34px;
-      height:34px;
-      object-fit:contain;
-      filter:brightness(0) invert(1);
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      z-index:-2;
+      display:block;
+    }
+
+    .quick-btn::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:-1;
+      background:linear-gradient(to top,rgba(20,0,45,.72),rgba(20,0,45,.06) 62%);
+    }
+
+    .quick-btn span{
+      width:100%;
+      padding:7px 4px 8px;
+      text-align:center;
+      text-shadow:0 2px 5px rgba(0,0,0,.55);
+      position:relative;
+      z-index:2;
     }
 
     .deposit-btn{
@@ -462,8 +484,8 @@
       }
 
       .quick-btn img{
-        width:29px;
-        height:29px;
+        width:100%;
+        height:100%;
       }
     }
 
@@ -499,12 +521,12 @@
       </div>
 
       <button id="depositBtn" class="quick-btn deposit-btn" type="button">
-        <img src="images/IMG_20260724_194326.png" alt="" onerror="this.style.display='none'" />
+        <img src="images/IMG_20260724_194326.png" alt="Deposit" />
         <span>DEPOSIT</span>
       </button>
 
       <button id="withdrawBtn" class="quick-btn withdraw-btn" type="button">
-        <img src="images/IMG_20260724_194411.png" alt="" onerror="this.style.display='none'" />
+        <img src="images/IMG_20260724_194411.png" alt="Withdrawal" />
         <span>WITHDRAWAL</span>
       </button>
     </section>
