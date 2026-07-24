@@ -27,21 +27,191 @@ h2{font-size:22px;margin:24px 2px 14px}.methods{display:grid;grid-template-colum
 <section class="card order"><div><small>Order ID</small><strong id="oid">UPI2505241758</strong></div><div><small>Amount</small><strong id="oa">₹1000.00</strong></div><div><small>Time Remaining</small><strong style="color:var(--p)">◷ <span id="timer">15:00</span></strong></div></section>
 <section class="card qrbox"><h2 class="qrtitle">Scan & Pay</h2><div class="sub">Scan the QR code using any UPI App</div><div class="qr"><img src="images/upi-qr.png" alt="UPI QR"></div><div class="sub">OR</div><div class="sub" style="margin:8px 0">Or Pay Using UPI ID</div><div class="copyrow"><strong id="upiid">dtwallet@upi</strong><button class="copy" data-copy="#upiid">Copy</button></div></section>
 <section class="card panel"><h3 style="color:var(--p);margin-bottom:8px">After Payment, Submit UTR</h3><p style="color:var(--muted);margin-bottom:12px">Please enter the UTR / Reference number after making the payment</p><input class="input" id="utr" inputmode="numeric" maxlength="22" placeholder="Enter UTR / Reference Number"><div class="limits">Enter 12 to 22 digit UTR number</div><button class="primary" id="submit">Submit UTR</button><div class="notice">💡 <b>Important:</b> Please complete the payment within 15 minutes.<br>Do not refresh or close this page.</div></section>
-<section class="card helpbox"><div><b style="color:var(--p)">Need Help?</b><div class="limits">If you have any issues with payment, contact our support.</div></div><button
-    class="copy"
-    type="button"
-    onclick="window.location.href='https://t.me/Thesecretmask7'"
->
-    💬 Contact Support
-</button></section><section class="card waiting"><b style="color:var(--p)">Waiting for your payment...</b><div class="limits">Once payment is successful, this page will update automatically.</div></section>
-</div></main><div class="toast" id="toast"></div><script>
-oa.textContent=`₹${Number(sessionStorage.getItem("depositAmount")||1000).toFixed(2)}`;let t=900;setInterval(()=>{if(t<=0)return;t--;timer.textContent=`${String(Math.floor(t/60)).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`},1000);
-document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{await navigator.clipboard.writeText(document.querySelector(b.dataset.copy).textContent);show("Copied")});function show(s,e=false){toast.textContent=s;toast.className="toast show"+(e?" error":"");setTimeout(()=>toast.className="toast",2200)}submit.onclick=()=>{/^\d{12,22}$/.test(utr.value.trim())?show("UTR submitted successfully"):show("Enter valid 12 to 22 digit UTR",true)}
+<section class="card helpbox"><div><b style="color:var(--p)">Need Help?</b><div class="limits">If you have any issues with payment, contact our support.</div></div><button class="copy">Contact Support</button></section><section class="card waiting"><b style="color:var(--p)">Waiting for your payment...</b><div class="limits">Once payment is successful, this page will update automatically.</div></section>
+</div></main><div class="toast" id="toast"></div><script type="module">
+import {
+  auth,
+  db,
+  USERS_COLLECTION,
+  DEPOSIT_COLLECTION
+} from "./firebase-config.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const amount = Number(sessionStorage.getItem("depositAmount") || 1000);
+const creditedAmount = Number((amount * 1.03).toFixed(2));
+
+const amountElement = document.getElementById("oa");
+const timerElement = document.getElementById("timer");
+const utrInput = document.getElementById("utr");
+const submitButton = document.getElementById("submit");
+const toast = document.getElementById("toast");
+const orderElement = document.getElementById("oid");
+
+let currentUser = null;
+let timeLeft = 900;
+let submitted = false;
+
+const orderId = `UPI${Date.now().toString().slice(-10)}`;
+orderElement.textContent = orderId;
+amountElement.textContent = `₹${amount.toFixed(2)}`;
+
+function show(message, error = false) {
+  toast.textContent = message;
+  toast.className = `toast show${error ? " error" : ""}`;
+
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => {
+    toast.className = "toast";
+  }, 2500);
+}
+
+setInterval(() => {
+  if (timeLeft <= 0) return;
+
+  timeLeft -= 1;
+  timerElement.textContent =
+    `${String(Math.floor(timeLeft / 60)).padStart(2, "0")}:` +
+    `${String(timeLeft % 60).padStart(2, "0")}`;
+}, 1000);
+
+document.querySelectorAll("[data-copy]").forEach(button => {
+  button.addEventListener("click", async () => {
+    try {
+      const value = document
+        .querySelector(button.dataset.copy)
+        .textContent
+        .trim();
+
+      await navigator.clipboard.writeText(value);
+      show("Copied");
+    } catch {
+      show("Could not copy.", true);
+    }
+  });
+});
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    location.replace("login.html");
+    return;
+  }
+
+  currentUser = user;
+
+  try {
+    const snap = await getDoc(doc(db, USERS_COLLECTION, user.uid));
+    const balance = snap.exists()
+      ? Number(snap.data().balance || 0)
+      : 0;
+
+    document
+      .querySelectorAll("[data-balance]")
+      .forEach(element => {
+        element.textContent = balance.toFixed(2);
+      });
+  } catch (error) {
+    console.error("Balance load error:", error);
+  }
+});
+
+submitButton.addEventListener("click", async () => {
+  const utr = utrInput.value.trim();
+
+  if (!/^\d{12,22}$/.test(utr)) {
+    show("Enter valid 12 to 22 digit UTR.", true);
+    return;
+  }
+
+  if (!currentUser) {
+    show("User account is not loaded.", true);
+    return;
+  }
+
+  if (submitted) {
+    show("This request has already been submitted.", true);
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+
+  try {
+    const duplicateQuery = query(
+      collection(db, DEPOSIT_COLLECTION),
+      where("utr", "==", utr)
+    );
+
+    const duplicateSnap = await getDocs(duplicateQuery);
+
+    if (!duplicateSnap.empty) {
+      throw new Error("duplicate-utr");
+    }
+
+    await addDoc(collection(db, DEPOSIT_COLLECTION), {
+      orderId,
+      userId: currentUser.uid,
+      email: currentUser.email || "",
+      method: "UPI",
+      depositMethod: "UPI",
+      currency: "INR",
+      amount,
+      amountInr: amount,
+      bonusPercent: 3,
+      bonusAmount: Number((creditedAmount - amount).toFixed(2)),
+      receiveAmount: creditedAmount,
+      creditedAmount,
+      utr,
+      utrNumber: utr,
+      transactionId: utr,
+      status: "pending",
+      adminNote: "",
+      rejectReason: "",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    submitted = true;
+    sessionStorage.removeItem("depositAmount");
+
+    show("Deposit request submitted successfully.");
+
+    setTimeout(() => {
+      location.href = "deposit-history.html";
+    }, 1200);
+  } catch (error) {
+    console.error("UPI deposit submit error:", error);
+
+    if (error.message === "duplicate-utr") {
+      show("This UTR has already been submitted.", true);
+    } else if (
+      error.code === "permission-denied" ||
+      error.code === "firestore/permission-denied"
+    ) {
+      show("Firestore rules blocked the request.", true);
+    } else {
+      show("Could not submit deposit request.", true);
+    }
+  } finally {
+    if (!submitted) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit UTR";
+    }
+  }
+});
 </script>
-<script type="module">
-import {auth,db,USERS_COLLECTION} from "./firebase-config.js";
-import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import {doc,getDoc} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-onAuthStateChanged(auth,async u=>{if(!u){location.replace("login.html");return}try{const s=await getDoc(doc(db,USERS_COLLECTION,u.uid));const b=s.exists()?Number(s.data().balance||0):0;document.querySelectorAll("[data-balance]").forEach(x=>x.textContent=b.toFixed(2))}catch(e){console.error(e)}});
-</script>
+
 </body></html>
