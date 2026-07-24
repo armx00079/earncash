@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6b1fd4" />
+  <title>Mone Cash - Login</title>
+
+  <style>
+    :root{
+      --primary:#8e2cf4;
+      --primary-dark:#5510bd;
+      --text:#20283a;
+      --muted:#747883;
+      --border:#e5e5ed;
+      --surface:#ffffff;
+      --soft:#f8f4ff;
+      --danger:#e53935;
+      --success:#159447;
+      --shadow:0 18px 55px rgba(71, 28, 130, .12);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      min-height:100vh;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 88% 8%, rgba(142,44,244,.08), transparent 24%),
+        radial-gradient(circle at 12% 18%, rgba(255,138,0,.07), transparent 22%),
+        #fff;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:18px;
+    }
+
+    .app-shell{
+      width:100%;
+      max-width:470px;
+      min-height:calc(100vh - 36px);
+      padding:26px 22px 30px;
+      border:1px solid rgba(225,225,235,.9);
+      border-radius:26px;
+      background:rgba(255,255,255,.97);
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .app-shell::before{
+      content:"";
+      position:absolute;
+      width:190px;
+      height:190px;
+      border-radius:50%;
+      background:rgba(142,44,244,.05);
+      top:-105px;
+      right:-85px;
+      pointer-events:none;
+    }
+
+    .brand{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:8px 0 30px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brand img{
+      width:min(330px, 88%);
+      height:auto;
+      object-fit:contain;
+      display:block;
+      filter:drop-shadow(0 8px 14px rgba(89,28,168,.08));
+    }
+
+    .heading{
+      text-align:center;
+      margin-bottom:32px;
+    }
+
+    .heading h1{
+      font-size:clamp(31px, 7vw, 42px);
+      line-height:1.15;
+      font-weight:850;
+      letter-spacing:-1px;
+      margin-bottom:12px;
+    }
+
+    .heading p{
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+    }
+
+    .form{
+      display:flex;
+      flex-direction:column;
+      gap:15px;
+    }
+
+    .field{
+      position:relative;
+    }
+
+    .field-box{
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      padding:0 14px;
+      background:#fff;
+      border:1.5px solid var(--border);
+      border-radius:17px;
+      transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .field-box:focus-within{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(142,44,244,.1);
+      transform:translateY(-1px);
+    }
+
+    .icon-box{
+      width:44px;
+      height:44px;
+      flex:0 0 44px;
+      display:grid;
+      place-items:center;
+      margin-right:12px;
+      border-radius:12px;
+      background:linear-gradient(145deg,#efe8ff,#fcfbff);
+    }
+
+    .icon-box svg,
+    .eye-btn svg{
+      width:23px;
+      height:23px;
+      fill:none;
+      stroke:#6a6e79;
+      stroke-width:1.9;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .field input{
+      width:100%;
+      min-width:0;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--text);
+      font-size:16px;
+    }
+
+    .field input::placeholder{
+      color:#979aa3;
+    }
+
+    .eye-btn{
+      width:42px;
+      height:42px;
+      flex:0 0 42px;
+      display:grid;
+      place-items:center;
+      border:1px solid transparent;
+      border-radius:12px;
+      background:transparent;
+      cursor:pointer;
+      transition:transform .15s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .eye-btn:hover{
+      background:#f7f2ff;
+      border-color:#e4d7ff;
+    }
+
+    .eye-btn:active{
+      transform:scale(.9);
+    }
+
+    .field.invalid .field-box{
+      border-color:var(--danger);
+      box-shadow:0 0 0 4px rgba(229,57,53,.08);
+    }
+
+    .error-text{
+      display:none;
+      margin:6px 5px 0;
+      min-height:18px;
+      color:var(--danger);
+      font-size:12px;
+    }
+
+    .field.invalid .error-text{
+      display:block;
+    }
+
+    .forgot-row{
+      display:flex;
+      justify-content:flex-end;
+      margin:1px 2px 2px;
+    }
+
+    .forgot-btn{
+      border:0;
+      background:transparent;
+      color:var(--primary-dark);
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      padding:6px 2px;
+      transition:transform .15s ease, opacity .2s ease;
+    }
+
+    .forgot-btn:hover{
+      opacity:.8;
+    }
+
+    .forgot-btn:active{
+      transform:scale(.95);
+    }
+
+    .action-btn{
+      min-height:62px;
+      border:2px solid transparent;
+      border-radius:17px;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:850;
+      position:relative;
+      overflow:hidden;
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .action-btn::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:-120%;
+      width:70%;
+      height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+      transform:skewX(-20deg);
+      transition:left .55s ease;
+    }
+
+    .action-btn:hover::before{
+      left:145%;
+    }
+
+    .action-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .action-btn:active{
+      transform:scale(.97);
+    }
+
+    .action-btn:disabled{
+      opacity:.72;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .login-btn{
+      color:#fff;
+      background:linear-gradient(100deg,var(--primary),var(--primary-dark));
+      box-shadow:0 12px 24px rgba(87,17,185,.24);
+    }
+
+    .google-btn{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:13px;
+      width:100%;
+      color:var(--text);
+      background:#fff;
+      border-color:var(--border);
+      box-shadow:0 8px 20px rgba(30,30,50,.06);
+    }
+
+    .google-btn:hover{
+      border-color:#cfc5e6;
+      box-shadow:0 12px 25px rgba(65,28,120,.1);
+    }
+
+    .google-icon{
+      width:29px;
+      height:29px;
+      display:block;
+    }
+
+    .btn-content{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .spinner{
+      width:20px;
+      height:20px;
+      display:none;
+      border-radius:50%;
+      border:3px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      animation:spin .75s linear infinite;
+    }
+
+    .google-btn .spinner{
+      border-color:rgba(90,40,160,.18);
+      border-top-color:var(--primary);
+    }
+
+    .loading .spinner{
+      display:block;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    .divider{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin:27px 0 22px;
+      color:#616570;
+      font-weight:700;
+    }
+
+    .divider::before,
+    .divider::after{
+      content:"";
+      height:1px;
+      flex:1;
+      background:#e7e7ed;
+    }
+
+    .register-text{
+      text-align:center;
+      color:#6a6d77;
+      font-size:15px;
+      margin-top:28px;
+    }
+
+    .register-text a{
+      color:var(--primary);
+      font-weight:850;
+      text-decoration:none;
+      position:relative;
+    }
+
+    .register-text a::after{
+      content:"";
+      position:absolute;
+      left:0;
+      bottom:-3px;
+      width:0;
+      height:2px;
+      background:var(--primary);
+      transition:width .2s ease;
+    }
+
+    .register-text a:hover::after{
+      width:100%;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translate(-50%,120px);
+      width:min(420px,calc(100% - 32px));
+      padding:14px 16px;
+      border-radius:14px;
+      color:#fff;
+      font-size:14px;
+      font-weight:800;
+      text-align:center;
+      opacity:0;
+      pointer-events:none;
+      z-index:100;
+      box-shadow:0 14px 30px rgba(0,0,0,.18);
+      transition:transform .3s ease, opacity .3s ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    .toast.success{background:var(--success)}
+    .toast.error{background:var(--danger)}
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(20,17,32,.48);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:90;
+      backdrop-filter:blur(5px);
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .modal{
+      width:min(420px,100%);
+      background:#fff;
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 25px 70px rgba(0,0,0,.2);
+      animation:pop .2s ease;
+    }
+
+    @keyframes pop{
+      from{opacity:0;transform:scale(.95) translateY(10px)}
+      to{opacity:1;transform:scale(1) translateY(0)}
+    }
+
+    .modal h2{
+      font-size:24px;
+      margin-bottom:8px;
+    }
+
+    .modal p{
+      color:var(--muted);
+      line-height:1.5;
+      margin-bottom:18px;
+      font-size:14px;
+    }
+
+    .modal-actions{
+      display:grid;
+      grid-template-columns:1fr 1.4fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .modal-btn{
+      min-height:48px;
+      border-radius:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .15s ease;
+    }
+
+    .modal-btn:active{
+      transform:scale(.96);
+    }
+
+    .cancel-btn{
+      background:#fff;
+      color:var(--text);
+      border:1.5px solid var(--border);
+    }
+
+    .send-btn{
+      color:#fff;
+      border:1.5px solid transparent;
+      background:linear-gradient(100deg,var(--primary),var(--primary-dark));
+    }
+
+    @media(max-width:520px){
+      body{
+        padding:0;
+        background:#fff;
+      }
+
+      .app-shell{
+        max-width:none;
+        min-height:100vh;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+        padding:22px 18px 30px;
+      }
+
+      .brand{
+        margin-top:2px;
+      }
+
+      .field-box{
+        min-height:64px;
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app-shell">
+    <div class="brand">
+      <img src="images/24091-removebg-preview.png" alt="Mone Cash" />
+    </div>
+
+    <section class="heading">
+      <h1>Welcome Back</h1>
+      <p>Login to your account and continue</p>
+    </section>
+
+    <form id="loginForm" class="form" novalidate>
+      <div class="field" id="emailField">
+        <div class="field-box">
+          <div class="icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+              <path d="m3 7 9 7 9-7"></path>
+            </svg>
+          </div>
+
+          <input
+            id="email"
+            type="email"
+            autocomplete="email"
+            placeholder="Gmail"
+            maxlength="120"
+            required
+          />
+        </div>
+
+        <div class="error-text">Please enter a valid email address.</div>
+      </div>
+
+      <div class="field" id="passwordField">
+        <div class="field-box">
+          <div class="icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="10" width="14" height="11" rx="2"></rect>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+              <path d="M12 14v3"></path>
+            </svg>
+          </div>
+
+          <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            minlength="6"
+            maxlength="60"
+            required
+          />
+
+          <button id="togglePassword" class="eye-btn" type="button" aria-label="Show password">
+            <svg viewBox="0 0 24 24">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+              <circle cx="12" cy="12" r="2.8"></circle>
+            </svg>
+          </button>
+        </div>
+
+        <div class="error-text">Password must be at least 6 characters.</div>
+      </div>
+
+      <div class="forgot-row">
+        <button id="forgotPasswordBtn" class="forgot-btn" type="button">
+          Forgot Password?
+        </button>
+      </div>
+
+      <button id="loginBtn" class="action-btn login-btn" type="submit">
+        <span class="btn-content">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="loginButtonText">Login</span>
+        </span>
+      </button>
+    </form>
+
+    <div class="divider">OR</div>
+
+    <button id="googleLoginBtn" class="action-btn google-btn" type="button">
+      <span class="btn-content">
+        <span class="spinner" aria-hidden="true"></span>
+
+        <svg class="google-icon" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3A12 12 0 1 1 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7A19.9 19.9 0 1 0 44 24c0-1.2-.1-2.3-.4-3.5Z"/>
+          <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8A12 12 0 0 1 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7A19.9 19.9 0 0 0 6.3 14.7Z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2A11.9 11.9 0 0 1 12.9 28.5l-6.5 5A20 20 0 0 0 24 44Z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4 5.6l6.2 5.2C41.2 35.4 44 30.4 44 24c0-1.2-.1-2.3-.4-3.5Z"/>
+        </svg>
+
+        <span id="googleButtonText">Login with Google</span>
+      </span>
+    </button>
+
+    <p class="register-text">
+      Don't have an account?
+      <a href="register.html">Register</a>
+    </p>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="resetModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <h2 id="resetTitle">Reset Password</h2>
+      <p>Enter your registered email. Firebase will send a password reset link.</p>
+
+      <div class="field" id="resetEmailField">
+        <div class="field-box">
+          <div class="icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+              <path d="m3 7 9 7 9-7"></path>
+            </svg>
+          </div>
+
+          <input
+            id="resetEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="Registered Gmail"
+          />
+        </div>
+        <div class="error-text">Enter a valid email address.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="closeResetModal" class="modal-btn cancel-btn" type="button">
+          Cancel
+        </button>
+
+        <button id="sendResetBtn" class="modal-btn send-btn" type="button">
+          Send Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      auth,
+      db,
+      googleProvider,
+      sendPasswordResetEmail,
+      USERS_COLLECTION
+    } from "./firebase-config.js";
+
+    import {
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const emailField = document.getElementById("emailField");
+    const passwordField = document.getElementById("passwordField");
+    const togglePassword = document.getElementById("togglePassword");
+
+    const loginBtn = document.getElementById("loginBtn");
+    const loginButtonText = document.getElementById("loginButtonText");
+
+    const googleLoginBtn = document.getElementById("googleLoginBtn");
+    const googleButtonText = document.getElementById("googleButtonText");
+
+    const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+    const resetModal = document.getElementById("resetModal");
+    const resetEmailInput = document.getElementById("resetEmail");
+    const resetEmailField = document.getElementById("resetEmailField");
+    const closeResetModal = document.getElementById("closeResetModal");
+    const sendResetBtn = document.getElementById("sendResetBtn");
+
+    const toast = document.getElementById("toast");
+
+    function showToast(message, type = "success") {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3200);
+    }
+
+    function setButtonLoading(button, textElement, isLoading, loadingText, normalText) {
+      button.disabled = isLoading;
+      button.classList.toggle("loading", isLoading);
+      textElement.textContent = isLoading ? loadingText : normalText;
+    }
+
+    function markInvalid(field, invalid) {
+      field.classList.toggle("invalid", invalid);
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validateLogin() {
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      const emailValid = isValidEmail(email);
+      const passwordValid = password.length >= 6;
+
+      markInvalid(emailField, !emailValid);
+      markInvalid(passwordField, !passwordValid);
+
+      return emailValid && passwordValid;
+    }
+
+    async function ensureUserDocument(user) {
+      const userRef = doc(db, USERS_COLLECTION, user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email || "",
+          displayName: user.displayName || "",
+          photoURL: user.photoURL || "",
+          balance: 0,
+          totalEarnings: 0,
+          referralEarnings: 0,
+          ownInviteCode: user.uid.slice(0, 8).toUpperCase(),
+          referredByCode: null,
+          accountStatus: "active",
+          role: "user",
+          emailVerified: user.emailVerified,
+          loginProvider: user.providerData?.[0]?.providerId || "password",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp()
+        });
+      } else {
+        await updateDoc(userRef, {
+          emailVerified: user.emailVerified,
+          lastLoginAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+
+    async function completeLogin(user) {
+      await ensureUserDocument(user);
+
+      showToast("Login successful.", "success");
+
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 900);
+    }
+
+    togglePassword.addEventListener("click", () => {
+      const showPassword = passwordInput.type === "password";
+
+      passwordInput.type = showPassword ? "text" : "password";
+      togglePassword.setAttribute(
+        "aria-label",
+        showPassword ? "Hide password" : "Show password"
+      );
+    });
+
+    emailInput.addEventListener("input", validateLogin);
+    passwordInput.addEventListener("input", validateLogin);
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!validateLogin()) {
+        showToast("Please check your email and password.", "error");
+        return;
+      }
+
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      setButtonLoading(
+        loginBtn,
+        loginButtonText,
+        true,
+        "Logging in...",
+        "Login"
+      );
+
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        await completeLogin(credential.user);
+      } catch (error) {
+        console.error("Login error:", error);
+
+        if (
+          error.code === "auth/invalid-credential" ||
+          error.code === "auth/wrong-password" ||
+          error.code === "auth/user-not-found"
+        ) {
+          showToast("Email or password is incorrect.", "error");
+        } else if (error.code === "auth/invalid-email") {
+          markInvalid(emailField, true);
+          showToast("Please enter a valid email.", "error");
+        } else if (error.code === "auth/too-many-requests") {
+          showToast("Too many attempts. Try again later.", "error");
+        } else if (error.code === "auth/network-request-failed") {
+          showToast("Network error. Check your internet.", "error");
+        } else {
+          showToast(error.message || "Login failed.", "error");
+        }
+      } finally {
+        setButtonLoading(
+          loginBtn,
+          loginButtonText,
+          false,
+          "Logging in...",
+          "Login"
+        );
+      }
+    });
+
+    googleLoginBtn.addEventListener("click", async () => {
+      setButtonLoading(
+        googleLoginBtn,
+        googleButtonText,
+        true,
+        "Connecting...",
+        "Login with Google"
+      );
+
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        await completeLogin(result.user);
+      } catch (error) {
+        console.error("Google login error:", error);
+
+        if (
+          error.code === "auth/popup-blocked" ||
+          error.code === "auth/operation-not-supported-in-this-environment"
+        ) {
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        }
+
+        if (error.code === "auth/popup-closed-by-user") {
+          showToast("Google login was cancelled.", "error");
+        } else if (error.code === "auth/unauthorized-domain") {
+          showToast(
+            "Add your GitHub Pages domain in Firebase Authorized Domains.",
+            "error"
+          );
+        } else if (error.code === "auth/account-exists-with-different-credential") {
+          showToast(
+            "This email already uses another login method.",
+            "error"
+          );
+        } else {
+          showToast(error.message || "Google login failed.", "error");
+        }
+      } finally {
+        setButtonLoading(
+          googleLoginBtn,
+          googleButtonText,
+          false,
+          "Connecting...",
+          "Login with Google"
+        );
+      }
+    });
+
+    try {
+      const redirectResult = await getRedirectResult(auth);
+
+      if (redirectResult?.user) {
+        await completeLogin(redirectResult.user);
+      }
+    } catch (error) {
+      console.error("Google redirect error:", error);
+      showToast(error.message || "Google login failed.", "error");
+    }
+
+    forgotPasswordBtn.addEventListener("click", () => {
+      resetEmailInput.value = emailInput.value.trim();
+      resetModal.classList.add("show");
+      resetModal.setAttribute("aria-hidden", "false");
+
+      setTimeout(() => {
+        resetEmailInput.focus();
+      }, 100);
+    });
+
+    function hideResetModal() {
+      resetModal.classList.remove("show");
+      resetModal.setAttribute("aria-hidden", "true");
+      markInvalid(resetEmailField, false);
+    }
+
+    closeResetModal.addEventListener("click", hideResetModal);
+
+    resetModal.addEventListener("click", (event) => {
+      if (event.target === resetModal) {
+        hideResetModal();
+      }
+    });
+
+    sendResetBtn.addEventListener("click", async () => {
+      const email = resetEmailInput.value.trim().toLowerCase();
+      const valid = isValidEmail(email);
+
+      markInvalid(resetEmailField, !valid);
+
+      if (!valid) {
+        return;
+      }
+
+      sendResetBtn.disabled = true;
+      sendResetBtn.textContent = "Sending...";
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        hideResetModal();
+        showToast("Password reset email has been sent.", "success");
+      } catch (error) {
+        console.error("Password reset error:", error);
+
+        if (error.code === "auth/invalid-email") {
+          markInvalid(resetEmailField, true);
+          showToast("Please enter a valid email.", "error");
+        } else if (error.code === "auth/too-many-requests") {
+          showToast("Too many requests. Try again later.", "error");
+        } else {
+          showToast(error.message || "Could not send reset email.", "error");
+        }
+      } finally {
+        sendResetBtn.disabled = false;
+        sendResetBtn.textContent = "Send Link";
+      }
+    });
+  </script>
+</body>
+</html>
