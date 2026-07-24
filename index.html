@@ -795,7 +795,7 @@
       }
 
       if (currentBalance < SPIN_COST) {
-        showToast("Minimum 20 Demo Coins are required.", "error");
+        showToast("Minimum 20  Coins are required.", "error");
         return;
       }
 
@@ -828,7 +828,7 @@
           spinning = false;
 
           showToast(
-            `${SPIN_COST} Demo Coins deducted. You received ${reward} Demo Coins.`,
+            `${SPIN_COST}  Coins deducted. You received ${reward}  Coins.`,
             "success"
           );
         }, 5700);
@@ -841,7 +841,7 @@
           spinning = false;
 
           if (error.message === "insufficient-balance") {
-            showToast("Your Demo Coin balance is below 20.", "error");
+            showToast("Your  Coin balance is below 20.", "error");
           } else if (
             error.code === "permission-denied" ||
             error.code === "firestore/permission-denied"
