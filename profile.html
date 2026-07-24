@@ -1,148 +1,882 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My Profile</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6514d8" />
+  <title>Mone Cash - Profile</title>
 
-<style>
-body{margin:0;font-family:Arial;background:#f3f3f3}
-.header{background:#5e239d;color:#fff;text-align:center;padding:15px;font-size:20px}
-.card{background:#fff;margin:15px;border-radius:12px;padding:15px}
-.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
-.label{color:#555}
-.value{font-weight:bold}
+  <style>
+    :root{
+      --primary:#6c12d8;
+      --primary-2:#8e27ef;
+      --text:#11172f;
+      --muted:#676d80;
+      --line:#ebe7f2;
+      --soft:#f7f2ff;
+      --danger:#df163a;
+      --success:#129447;
+      --shadow:0 14px 35px rgba(57,26,102,.10);
+    }
 
-.ref-box{
-  background:#f9f9ff;
-  border:1px dashed #5e239d;
-  border-radius:12px;
-  padding:15px;
-  margin:15px;
-  text-align:center;
-}
-.ref-link{
-  word-break:break-all;
-  font-size:13px;
-  color:#333;
-  margin:10px 0;
-}
-.copy-btn{
-  background:#5e239d;
-  color:#fff;
-  border:none;
-  padding:10px 18px;
-  border-radius:20px;
-  font-size:14px;
-}
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
 
-.btn{
-  margin:20px;
-  background:#e53935;
-  color:#fff;
-  border:none;
-  width:calc(100% - 40px);
-  padding:14px;
-  border-radius:30px;
-  font-size:18px
-}
-.back{
-  margin:0 20px 20px;
-  background:#5e239d;
-  color:#fff;
-  border:none;
-  width:calc(100% - 40px);
-  padding:14px;
-  border-radius:30px;
-  font-size:18px
-}
-</style>
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      min-height:100vh;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 85% 4%,rgba(145,38,239,.08),transparent 24%),
+        #fff;
+      display:flex;
+      justify-content:center;
+    }
+
+    button,
+    a{
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .app{
+      width:100%;
+      max-width:520px;
+      min-height:100vh;
+      padding-bottom:105px;
+      position:relative;
+      background:#fff;
+    }
+
+    .hero{
+      min-height:218px;
+      padding:34px 18px 80px;
+      background:linear-gradient(115deg,#8b19ee,#4c08b4);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+    }
+
+    .hero::before{
+      width:170px;
+      height:170px;
+      right:-75px;
+      top:-70px;
+    }
+
+    .hero::after{
+      width:120px;
+      height:120px;
+      left:-55px;
+      bottom:-55px;
+    }
+
+    .hero h1{
+      text-align:center;
+      font-size:34px;
+      font-weight:900;
+      letter-spacing:-.7px;
+      position:relative;
+      z-index:1;
+    }
+
+    .profile-card{
+      margin:-64px 18px 28px;
+      min-height:174px;
+      padding:22px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:18px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:25px;
+      background:#fff;
+      box-shadow:var(--shadow);
+      position:relative;
+      z-index:3;
+    }
+
+    .avatar{
+      width:104px;
+      height:104px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 50% 28%,#7c13dc 0 18%,transparent 19%),
+        radial-gradient(ellipse at 50% 80%,#7c13dc 0 34%,transparent 35%),
+        linear-gradient(145deg,#eadcff,#f8f3ff);
+      box-shadow:inset 0 0 0 1px rgba(117,24,211,.06);
+      flex:0 0 104px;
+    }
+
+    .profile-copy{
+      min-width:0;
+    }
+
+    .profile-copy h2{
+      font-size:clamp(24px,6vw,34px);
+      line-height:1.05;
+      font-weight:950;
+      letter-spacing:-.7px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:10px;
+    }
+
+    .profile-copy p{
+      color:var(--muted);
+      font-size:16px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .edit-btn{
+      width:60px;
+      height:60px;
+      border:1.5px solid #e3d7f7;
+      border-radius:50%;
+      background:linear-gradient(145deg,#f3eaff,#fbf8ff);
+      color:var(--primary);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition:transform .16s ease, box-shadow .2s ease;
+    }
+
+    .edit-btn:hover{
+      box-shadow:0 10px 20px rgba(92,18,180,.12);
+    }
+
+    .edit-btn:active{
+      transform:scale(.9);
+    }
+
+    .edit-btn svg{
+      width:27px;
+      height:27px;
+      fill:currentColor;
+    }
+
+    .menu{
+      padding:0 18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .menu-item{
+      min-height:112px;
+      padding:17px 18px;
+      border:1px solid var(--line);
+      border-radius:23px;
+      background:#fff;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:16px;
+      text-decoration:none;
+      color:var(--text);
+      box-shadow:0 8px 25px rgba(38,20,70,.05);
+      cursor:pointer;
+      transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .menu-item:hover{
+      border-color:#dbcdf0;
+      box-shadow:0 12px 28px rgba(52,21,100,.08);
+    }
+
+    .menu-item:active{
+      transform:scale(.98);
+    }
+
+    .menu-icon{
+      width:66px;
+      height:66px;
+      border-radius:17px;
+      background:linear-gradient(145deg,#efe6ff,#fbf8ff);
+      color:var(--primary);
+      display:grid;
+      place-items:center;
+      flex:0 0 66px;
+    }
+
+    .menu-icon svg{
+      width:34px;
+      height:34px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2.1;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .menu-copy{
+      min-width:0;
+    }
+
+    .menu-copy h3{
+      font-size:21px;
+      line-height:1.15;
+      font-weight:900;
+      margin-bottom:7px;
+    }
+
+    .menu-copy p{
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.35;
+    }
+
+    .arrow{
+      color:var(--primary);
+      font-size:42px;
+      line-height:1;
+      font-weight:300;
+    }
+
+    .logout{
+      color:var(--danger);
+    }
+
+    .logout .menu-icon{
+      color:var(--danger);
+      background:linear-gradient(145deg,#ffe8ec,#fff7f8);
+    }
+
+    .logout .arrow{
+      color:var(--danger);
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:0;
+      transform:translateX(-50%);
+      width:min(520px,100%);
+      min-height:84px;
+      padding:8px 24px calc(8px + env(safe-area-inset-bottom));
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      background:rgba(255,255,255,.96);
+      border-top:1px solid var(--line);
+      box-shadow:0 -8px 24px rgba(48,22,85,.08);
+      backdrop-filter:blur(12px);
+      z-index:30;
+    }
+
+    .nav-item{
+      border:0;
+      background:transparent;
+      color:#6d7280;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:850;
+      cursor:pointer;
+      transition:transform .16s ease,color .2s ease;
+    }
+
+    .nav-item:active{
+      transform:scale(.92);
+    }
+
+    .nav-item.active{
+      color:var(--primary);
+    }
+
+    .nav-item svg{
+      width:30px;
+      height:30px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2.1;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(19,11,35,.5);
+      backdrop-filter:blur(5px);
+      z-index:60;
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .modal{
+      width:min(420px,100%);
+      padding:22px;
+      border-radius:22px;
+      background:#fff;
+      box-shadow:0 25px 70px rgba(0,0,0,.22);
+      animation:pop .2s ease;
+    }
+
+    @keyframes pop{
+      from{opacity:0;transform:translateY(12px) scale(.95)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    .modal h2{
+      font-size:25px;
+      margin-bottom:7px;
+    }
+
+    .modal p{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+      margin-bottom:16px;
+    }
+
+    .name-input{
+      width:100%;
+      height:58px;
+      border:1.5px solid var(--line);
+      border-radius:14px;
+      padding:0 14px;
+      outline:0;
+      font-size:17px;
+    }
+
+    .name-input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(108,18,216,.08);
+    }
+
+    .modal-actions{
+      display:grid;
+      grid-template-columns:1fr 1.3fr;
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .modal-btn{
+      min-height:50px;
+      border-radius:13px;
+      font-weight:850;
+      cursor:pointer;
+      transition:transform .15s ease;
+    }
+
+    .modal-btn:active{
+      transform:scale(.96);
+    }
+
+    .cancel-btn{
+      background:#fff;
+      color:var(--text);
+      border:1.5px solid var(--line);
+    }
+
+    .save-btn{
+      color:#fff;
+      border:1.5px solid transparent;
+      background:linear-gradient(100deg,var(--primary-2),var(--primary));
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:98px;
+      transform:translate(-50%,110px);
+      width:min(420px,calc(100% - 30px));
+      padding:14px 16px;
+      border-radius:14px;
+      background:var(--success);
+      color:#fff;
+      font-weight:850;
+      text-align:center;
+      opacity:0;
+      pointer-events:none;
+      z-index:100;
+      transition:transform .28s ease,opacity .28s ease;
+      box-shadow:0 14px 30px rgba(0,0,0,.18);
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    .toast.error{
+      background:var(--danger);
+    }
+
+    @media(max-width:430px){
+      .hero{
+        min-height:190px;
+        padding-top:28px;
+      }
+
+      .hero h1{
+        font-size:31px;
+      }
+
+      .profile-card{
+        margin:-55px 14px 24px;
+        min-height:150px;
+        padding:18px 16px;
+        grid-template-columns:auto minmax(0,1fr) auto;
+        gap:13px;
+      }
+
+      .avatar{
+        width:82px;
+        height:82px;
+        flex-basis:82px;
+      }
+
+      .edit-btn{
+        width:52px;
+        height:52px;
+      }
+
+      .menu{
+        padding:0 14px;
+      }
+
+      .menu-item{
+        min-height:98px;
+        padding:14px;
+        gap:13px;
+      }
+
+      .menu-icon{
+        width:56px;
+        height:56px;
+        flex-basis:56px;
+      }
+
+      .menu-icon svg{
+        width:30px;
+        height:30px;
+      }
+
+      .menu-copy h3{
+        font-size:18px;
+      }
+
+      .menu-copy p{
+        font-size:13px;
+      }
+
+      .arrow{
+        font-size:35px;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <main class="app">
+    <section class="hero">
+      <h1>Profile</h1>
+    </section>
 
-<div class="header">👤 My Profile</div>
+    <section class="profile-card">
+      <div class="avatar" aria-hidden="true"></div>
 
-<div class="card">
-  <div class="row"><span class="label">Name</span><span class="value" id="name">-</span></div>
-  <div class="row"><span class="label">Email</span><span class="value" id="email">-</span></div>
-  <div class="row"><span class="label">Wallet</span><span class="value">₹<span id="wallet">0</span></span></div>
-  <div class="row"><span class="label">Winning</span><span class="value">₹<span id="winning">0</span></span></div>
-  <div class="row"><span class="label">Joined</span><span class="value" id="joined">-</span></div>
-</div>
+      <div class="profile-copy">
+        <h2 id="profileName">Mr. User</h2>
+        <p>User ID: <span id="userCode">Loading...</span></p>
+      </div>
 
-<!-- 🎁 REFERRAL SECTION -->
-<div class="ref-box">
-  <h3 style="margin:0;color:#5e239d">🎁 Invite & Earn ₹20</h3>
-  <p style="font-size:14px;margin:6px 0">
-    Friend joins → You get ₹20<br>
-    New user gets ₹10
-  </p>
-  <div class="ref-link" id="refLink">Loading...</div>
-  <button class="copy-btn" onclick="copyRef()">📋 Copy Referral Link</button>
-</div>
+      <button id="editNameBtn" class="edit-btn" type="button" aria-label="Edit name">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Z"></path>
+          <path d="m14.06 6.19 2.12-2.12a1.5 1.5 0 0 1 2.12 0l1.63 1.63a1.5 1.5 0 0 1 0 2.12l-2.12 2.12-3.75-3.75Z"></path>
+        </svg>
+      </button>
+    </section>
 
-<button class="btn" onclick="logout()">Logout</button>
-<button class="back" onclick="history.back()">← Back</button>
+    <section class="menu">
+      <a class="menu-item" href="deposit-history.html">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v12"></path>
+            <path d="m7 10 5 5 5-5"></path>
+            <path d="M5 17v3h14v-3"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Deposit History</h3>
+          <p>View all your deposit records</p>
+        </div>
+        <div class="arrow">›</div>
+      </a>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      <a class="menu-item" href="withdrawal-history.html">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 21V9"></path>
+            <path d="m7 14 5-5 5 5"></path>
+            <path d="M5 7V4h14v3"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Withdrawal History</h3>
+          <p>View all your withdrawal records</p>
+        </div>
+        <div class="arrow">›</div>
+      </a>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBudDcoi0ybnrLpifDJGxYxfdF3eoSpDxM",
-  authDomain: "earncash7-f0ecc.firebaseapp.com",
-  projectId: "earncash7-f0ecc",
-  appId: "1:1017767289580:web:56ecbedc90fe167d3dbbc9"
-};
+      <button id="supportBtn" class="menu-item" type="button">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 13v-2a8 8 0 0 1 16 0v2"></path>
+            <path d="M4 13h2a2 2 0 0 1 2 2v3H6a2 2 0 0 1-2-2v-3Z"></path>
+            <path d="M20 13h-2a2 2 0 0 0-2 2v3h2a2 2 0 0 0 2-2v-3Z"></path>
+            <path d="M16 20h-3"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Customer Support</h3>
+          <p>Get help and support</p>
+        </div>
+        <div class="arrow">›</div>
+      </button>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+      <a class="menu-item" href="invite.html">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="8" r="3"></circle>
+            <path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path>
+            <path d="M18 8v6"></path>
+            <path d="M15 11h6"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Invite & Earn</h3>
+          <p>Invite friends and earn rewards</p>
+        </div>
+        <div class="arrow">›</div>
+      </a>
 
-let referralLink = "";
+      <a class="menu-item" href="invitation-record.html">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="5" y="4" width="14" height="17" rx="2"></rect>
+            <path d="M9 4V2h6v2"></path>
+            <path d="M9 9h6"></path>
+            <path d="M9 13h6"></path>
+            <path d="M9 17h4"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Total Invitation Record</h3>
+          <p>View total invitation and earnings</p>
+        </div>
+        <div class="arrow">›</div>
+      </a>
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.href = "index.html";
-    return;
-  }
+      <button id="logoutBtn" class="menu-item logout" type="button">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M10 4H5v16h5"></path>
+            <path d="M14 8l4 4-4 4"></path>
+            <path d="M8 12h10"></path>
+          </svg>
+        </div>
+        <div class="menu-copy">
+          <h3>Logout</h3>
+          <p>Logout from your account</p>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+    </section>
+  </main>
 
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) return;
+  <nav class="bottom-nav" aria-label="Bottom navigation">
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24">
+        <path d="m3 11 9-8 9 8"></path>
+        <path d="M5 10v11h14V10"></path>
+        <path d="M9 21v-6h6v6"></path>
+      </svg>
+      <span>Home</span>
+    </a>
 
-  const data = snap.data();
+    <a class="nav-item" href="invite.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 9h16v11H4z"></path>
+        <path d="M12 9v11"></path>
+        <path d="M4 13h16"></path>
+        <path d="M8.5 9C6 7.5 6.5 4.5 8.5 4.5 10.5 4.5 12 9 12 9"></path>
+        <path d="M15.5 9C18 7.5 17.5 4.5 15.5 4.5 13.5 4.5 12 9 12 9"></path>
+      </svg>
+      <span>Invite</span>
+    </a>
 
-  document.getElementById("name").innerText = data.name || user.displayName || "-";
-  document.getElementById("email").innerText = data.email || user.email || "-";
-  document.getElementById("wallet").innerText = data.balance ?? 0;
-  document.getElementById("winning").innerText = data.totalEarned ?? 0;
+    <a class="nav-item active" href="profile.html">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+      </svg>
+      <span>Profile</span>
+    </a>
+  </nav>
 
-  if (data.createdAt?.toDate) {
-    document.getElementById("joined").innerText =
-      data.createdAt.toDate().toLocaleDateString();
-  }
+  <div id="editModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <h2 id="editTitle">Change Name</h2>
+      <p>Enter the name that should appear on your Mone Cash profile.</p>
 
-  // ✅ FINAL FIXED REFERRAL LINK (GITHUB PAGES SAFE)
-  referralLink =
-    location.origin + "/earncash/index.html?ref=" + user.uid;
+      <input
+        id="nameInput"
+        class="name-input"
+        type="text"
+        maxlength="35"
+        placeholder="Example: Mr. Arman"
+      />
 
-  document.getElementById("refLink").innerText = referralLink;
-});
+      <div class="modal-actions">
+        <button id="cancelEditBtn" class="modal-btn cancel-btn" type="button">
+          Cancel
+        </button>
 
-// 📋 COPY LINK
-window.copyRef = () => {
-  navigator.clipboard.writeText(referralLink);
-  alert("Referral link copied ✅");
-};
+        <button id="saveNameBtn" class="modal-btn save-btn" type="button">
+          Save Name
+        </button>
+      </div>
+    </div>
+  </div>
 
-// 🚪 LOGOUT
-window.logout = () => {
-  signOut(auth).then(() => location.href = "index.html");
-};
-</script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script type="module">
+    import {
+      auth,
+      db,
+      USERS_COLLECTION
+    } from "./firebase-config.js";
+
+    import {
+      onAuthStateChanged,
+      updateProfile,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const profileName = document.getElementById("profileName");
+    const userCode = document.getElementById("userCode");
+
+    const editNameBtn = document.getElementById("editNameBtn");
+    const editModal = document.getElementById("editModal");
+    const nameInput = document.getElementById("nameInput");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const saveNameBtn = document.getElementById("saveNameBtn");
+
+    const supportBtn = document.getElementById("supportBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const toast = document.getElementById("toast");
+
+    let currentUser = null;
+    let currentUserRef = null;
+
+    function showToast(message, type = "success") {
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2600);
+    }
+
+    function makeUserCode(uid) {
+      return `DTW${uid.slice(0, 7).toUpperCase()}`;
+    }
+
+    function openEditModal() {
+      nameInput.value = profileName.textContent.trim();
+      editModal.classList.add("show");
+      editModal.setAttribute("aria-hidden", "false");
+
+      setTimeout(() => {
+        nameInput.focus();
+        nameInput.select();
+      }, 100);
+    }
+
+    function closeEditModal() {
+      editModal.classList.remove("show");
+      editModal.setAttribute("aria-hidden", "true");
+    }
+
+    async function loadProfile(user) {
+      currentUser = user;
+      currentUserRef = doc(db, USERS_COLLECTION, user.uid);
+
+      const snap = await getDoc(currentUserRef);
+
+      let data = {};
+
+      if (snap.exists()) {
+        data = snap.data();
+      } else {
+        data = {
+          uid: user.uid,
+          email: user.email || "",
+          displayName: user.displayName || "Mr. User",
+          ownInviteCode: user.uid.slice(0, 8).toUpperCase(),
+          accountStatus: "active",
+          role: "user",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        await setDoc(currentUserRef, data);
+      }
+
+      const displayName =
+        data.displayName ||
+        user.displayName ||
+        "Mr. User";
+
+      profileName.textContent = displayName;
+      userCode.textContent = data.userCode || makeUserCode(user.uid);
+
+      if (!data.userCode) {
+        await updateDoc(currentUserRef, {
+          userCode: makeUserCode(user.uid),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+
+    editNameBtn.addEventListener("click", openEditModal);
+    cancelEditBtn.addEventListener("click", closeEditModal);
+
+    editModal.addEventListener("click", (event) => {
+      if (event.target === editModal) {
+        closeEditModal();
+      }
+    });
+
+    nameInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        saveNameBtn.click();
+      }
+    });
+
+    saveNameBtn.addEventListener("click", async () => {
+      const newName = nameInput.value
+        .trim()
+        .replace(/\s+/g, " ");
+
+      if (newName.length < 2) {
+        showToast("Please enter a valid name.", "error");
+        return;
+      }
+
+      if (!currentUser || !currentUserRef) {
+        showToast("User account is not loaded.", "error");
+        return;
+      }
+
+      saveNameBtn.disabled = true;
+      saveNameBtn.textContent = "Saving...";
+
+      try {
+        await updateDoc(currentUserRef, {
+          displayName: newName,
+          updatedAt: serverTimestamp()
+        });
+
+        await updateProfile(currentUser, {
+          displayName: newName
+        });
+
+        profileName.textContent = newName;
+        closeEditModal();
+        showToast("Profile name updated.");
+      } catch (error) {
+        console.error("Name update error:", error);
+
+        if (
+          error.code === "permission-denied" ||
+          error.code === "firestore/permission-denied"
+        ) {
+          showToast("Firestore rules blocked the update.", "error");
+        } else {
+          showToast("Could not update the name.", "error");
+        }
+      } finally {
+        saveNameBtn.disabled = false;
+        saveNameBtn.textContent = "Save Name";
+      }
+    });
+
+    supportBtn.addEventListener("click", () => {
+      window.open(
+        "https://t.me/Thesecretmask7",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      logoutBtn.disabled = true;
+
+      try {
+        await signOut(auth);
+        window.location.replace("login.html");
+      } catch (error) {
+        console.error("Logout error:", error);
+        logoutBtn.disabled = false;
+        showToast("Logout failed. Please try again.", "error");
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.replace("login.html");
+        return;
+      }
+
+      try {
+        await loadProfile(user);
+      } catch (error) {
+        console.error("Profile load error:", error);
+        showToast("Could not load profile.", "error");
+      }
+    });
+  </script>
 </body>
 </html>
