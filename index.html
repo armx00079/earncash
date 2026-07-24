@@ -518,7 +518,7 @@
         <div class="wallet-fallback" aria-label="Wallet">🏦</div>
 
         <div class="balance-copy">
-          <small> Balance</small>
+          <small>Wallet Balance</small>
           <div class="balance-amount">₹<span id="balanceAmount">0.00</span></div>
         </div>
       </div>
@@ -581,7 +581,7 @@
         <button id="spinBtn" class="center-button" type="button">SPIN</button>
       </div>
 
-      <div class="spin-info">Spin cost: ₹20</div>
+      <div class="spin-info">Spin cost: 20  Coins • Odds are probability-based</div>
     </section>
   </main>
 
@@ -639,6 +639,35 @@
 
     const SPIN_COST = 20;
     const rewards = [10, 20, 25, 9, 50, 46, 17, 8, 6, 120];
+
+    // Transparent demo-coin odds. Total probability = 100%.
+    const rewardChances = [
+      { amount: 6, probability: 25 },
+      { amount: 8, probability: 20 },
+      { amount: 9, probability: 15 },
+      { amount: 10, probability: 10 },
+      { amount: 17, probability: 5 },
+      { amount: 20, probability: 20 },
+      { amount: 25, probability: 2 },
+      { amount: 46, probability: 1 },
+      { amount: 50, probability: 1 },
+      { amount: 120, probability: 1 }
+    ];
+
+    function getRandomReward() {
+      const random = Math.random() * 100;
+      let cumulativeProbability = 0;
+
+      for (const item of rewardChances) {
+        cumulativeProbability += item.probability;
+
+        if (random < cumulativeProbability) {
+          return item.amount;
+        }
+      }
+
+      return 6;
+    }
     const names = [
       "Rahul", "Aman", "Priya", "Arjun", "Neha",
       "Vikas", "Rohit", "Sana", "Karan", "Pooja"
@@ -750,9 +779,10 @@
         email: currentUser.email || "",
         spinCost: SPIN_COST,
         reward: reward,
+        probability: rewardChances.find(item => item.amount === reward)?.probability || 0,
         segmentIndex: selectedIndex,
         balanceAfter: newBalance,
-        type: "spin",
+        type: "demo_spin",
         createdAt: serverTimestamp()
       });
 
@@ -765,7 +795,7 @@
       }
 
       if (currentBalance < SPIN_COST) {
-        showToast("Minimum ₹20 balance is required.", "error");
+        showToast("Minimum 20 Demo Coins are required.", "error");
         return;
       }
 
@@ -773,8 +803,17 @@
       spinBtn.disabled = true;
       spinBtn.textContent = "...";
 
-      const selectedIndex = Math.floor(Math.random() * rewards.length);
-      const reward = rewards[selectedIndex];
+      const reward = getRandomReward();
+      const selectedIndex = rewards.indexOf(reward);
+
+      if (selectedIndex === -1) {
+        spinning = false;
+        spinBtn.disabled = false;
+        spinBtn.textContent = "SPIN";
+        showToast("Reward configuration error.", "error");
+        return;
+      }
+
       const rotation = calculateRotation(selectedIndex);
 
       wheel.style.transform = `rotate(${rotation}deg)`;
@@ -789,7 +828,7 @@
           spinning = false;
 
           showToast(
-            `₹${SPIN_COST} cost deducted. You received ₹${reward}.`,
+            `${SPIN_COST} Demo Coins deducted. You received ${reward} Demo Coins.`,
             "success"
           );
         }, 5700);
@@ -802,7 +841,7 @@
           spinning = false;
 
           if (error.message === "insufficient-balance") {
-            showToast("Your balance is below ₹20.", "error");
+            showToast("Your Demo Coin balance is below 20.", "error");
           } else if (
             error.code === "permission-denied" ||
             error.code === "firestore/permission-denied"
