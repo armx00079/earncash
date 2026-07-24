@@ -1,94 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Add Money</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Deposit</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#f3f3f3;
-}
-.header{
-  background:#5e239d;
-  color:white;
-  text-align:center;
-  padding:15px;
-  font-size:20px;
-}
-.card{
-  background:white;
-  margin:15px;
-  border-radius:15px;
-  padding:15px;
-}
-.pack{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-.box{
-  background:#ede7f6;
-  border-radius:12px;
-  padding:18px;
-  text-align:center;
-  cursor:pointer;
-}
-.box.active{
-  background:#5e239d;
-  color:white;
-}
-.btn{
-  margin:20px 15px;
-  background:#5e239d;
-  color:white;
-  border:none;
-  width:calc(100% - 30px);
-  padding:14px;
-  border-radius:30px;
-  font-size:18px;
-}
+:root{--p:#6f14d9;--p2:#8f2af0;--text:#161b35;--muted:#6f7482;--line:#e8e3ef;--green:#159b32}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#fff;color:var(--text)}
+.app{max-width:520px;margin:auto;min-height:100vh}.top{height:72px;background:linear-gradient(100deg,#43109a,#821ae1);color:white;display:grid;grid-template-columns:45px 1fr 45px;align-items:center;padding:0 16px}
+.top h1{text-align:center;font-size:22px}.top button{width:40px;height:40px;border:0;background:transparent;color:#fff;font-size:30px}.help{border:2px solid #fff!important;border-radius:50%;font-size:20px!important}
+.content{padding:16px}.card{border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 8px 22px rgba(45,20,80,.06)}
+.balance{padding:18px;display:flex;justify-content:space-between;align-items:center}.bal-left{display:flex;align-items:center;gap:13px}.wallet{width:56px;height:56px;border-radius:15px;background:#f2eaff;display:grid;place-items:center;font-size:30px}
+.label{font-size:14px}.amount{font-size:28px;font-weight:900;margin-top:3px}.secure{background:#effcf2;color:var(--green);padding:10px 12px;border-radius:14px;font-weight:800;font-size:13px}
+h2{font-size:22px;margin:24px 2px 14px}.methods{display:grid;grid-template-columns:1fr 1fr;gap:12px}.method{min-height:94px;border:1.5px solid var(--line);border-radius:16px;background:#fff;font-weight:800;font-size:18px}.method span{display:block;color:var(--muted);font-size:14px;margin-top:6px}.method.active{border-color:var(--p);color:var(--p);background:#fdf9ff}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.amt{height:58px;border:1.5px solid var(--line);border-radius:13px;background:#fff;font-weight:800}.amt.active{border-color:var(--p);color:var(--p)}
+.panel{padding:18px;margin-top:18px}.field{height:60px;border:1.5px solid var(--line);border-radius:12px;display:flex;align-items:center;padding:0 14px}.field input{width:100%;border:0;outline:0;font-size:27px;font-weight:900}.limits{font-size:14px;color:var(--muted);margin-top:10px}
+.receive{position:relative}.badge{position:absolute;right:16px;top:16px;background:var(--p);color:#fff;padding:6px 10px;border-radius:8px;font-weight:800}.receive-grid{display:grid;grid-template-columns:1fr 30px 1fr;text-align:center;align-items:end;margin-top:30px}.receive-grid strong{display:block;font-size:23px;margin-top:6px}.purple{color:var(--p)}
+.info{margin-top:14px;background:#f6f0ff;padding:13px;border-radius:13px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.step{font-size:12px}.step b{display:block;font-size:13px}.n{width:30px;height:30px;border-radius:50%;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:900;margin-bottom:6px}
+.banner{margin-top:18px;border-radius:17px;padding:20px;text-align:center;color:#fff;background:linear-gradient(100deg,#4e08a8,#7f18d3);font-size:21px;font-weight:800}.banner strong{font-size:36px;color:#ffcc31}
+.primary{width:100%;height:64px;border:0;border-radius:16px;margin-top:18px;background:linear-gradient(100deg,#8d26ed,#5b0dbc);color:#fff;font-size:20px;font-weight:900}
+.order{padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center}.order>div:not(:last-child){border-right:1px solid var(--line)}.order small{display:block;color:var(--muted);margin-bottom:6px}.order strong{font-size:17px}
+.qrbox{padding:20px;margin-top:14px}.qrtitle{text-align:center;font-size:25px;font-weight:900}.sub{text-align:center;color:var(--muted);margin-top:5px}.qr{width:245px;max-width:78vw;aspect-ratio:1;margin:16px auto;border:2px solid var(--p);border-radius:15px;overflow:hidden}.qr img{width:100%;height:100%;object-fit:contain}
+.copyrow{height:54px;border:1.5px solid #c9a8ee;border-radius:12px;display:flex;align-items:center;padding:0 10px;gap:10px}.copyrow strong{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.copy{border:1.5px solid var(--p);border-radius:10px;background:#fff;color:var(--p);font-weight:800;padding:9px 13px}
+.input{width:100%;height:56px;border:1.5px solid var(--line);border-radius:12px;padding:0 13px;font-size:16px}.notice{margin-top:14px;padding:14px;border-radius:13px;background:#fff9e9;border:1px solid #efdca6;color:#8a5400;font-size:13px;line-height:1.5}
+.helpbox{margin-top:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}.waiting{margin-top:14px;padding:14px 16px}.network{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;border:1px solid var(--line);border-radius:12px;padding:14px 5px;margin-top:14px}.network>div:not(:last-child){border-right:1px solid var(--line)}.network strong{display:block;color:var(--p);margin-top:5px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,100px);opacity:0;background:#159447;color:#fff;padding:13px 16px;border-radius:12px;font-weight:800;transition:.25s}.toast.show{transform:translate(-50%,0);opacity:1}.toast.error{background:#e33a3a}
+@media(max-width:430px){.grid{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.content{padding:14px}.order strong{font-size:14px}.secure{font-size:12px}.amount{font-size:24px}}
 </style>
-</head>
-
-<body>
-
-<div class="header">Add Money</div>
-
-<div class="card">
-  <div class="pack">
-    <div class="box" onclick="selectPack(100,5)">Spin 5<br><b>₹100</b></div>
-    <div class="box" onclick="selectPack(199,10)">Spin 10<br><b>₹199</b></div>
-    <div class="box" onclick="selectPack(298,15)">Spin 15<br><b>₹298</b></div>
-    <div class="box" onclick="selectPack(400,20)">Spin 20<br><b>₹400</b></div>
-    <div class="box" onclick="selectPack(498,25)">Spin 25<br><b>₹498</b></div>
-    <div class="box" onclick="selectPack(599,30)">Spin 30<br><b>₹599</b></div>
-  </div>
-</div>
-
-<button class="btn" onclick="goPay()">Add Money</button>
-
+</head><body><main class="app">
+<header class="top"><button onclick="history.back()">←</button><h1>Deposit</h1><button class="help">?</button></header>
+<div class="content">
+<section class="card balance"><div class="bal-left"><div class="wallet">👛</div><div><div class="label">Wallet Balance</div><div class="amount">₹<span data-balance>0.00</span></div></div></div><div class="secure">🛡 Secure<br>Transaction</div></section>
+<h2>Select Deposit Method</h2><div class="methods"><button class="method active" id="upi">UPI<span>Instant Deposit</span></button><button class="method" id="usdt">USDT (TRC20)<span>Crypto Deposit</span></button></div>
+<h2 id="title">Select Amount</h2><div class="grid" id="grid"></div>
+<section class="card panel"><div id="lab">Enter Amount</div><div class="field" style="margin-top:10px"><input id="val" inputmode="decimal" value="1000"><span id="unit">₹</span></div><div class="limits" id="limit">Min: ₹200 | Max: ₹50,000</div></section>
+<section class="card panel receive"><div class="badge">3% Extra</div><h3>You Will Get</h3><div class="receive-grid"><div><small>Amount</small><strong id="base">₹1000.00</strong></div><div>→</div><div><small>You Will Receive</small><strong class="purple" id="got">₹1030.00</strong></div></div></section>
+<section class="card panel" id="how"><h3 style="color:var(--p)">How It Works</h3><div class="steps"><div class="step"><div class="n">1</div><b>Choose Amount</b>Select deposit amount</div><div class="step"><div class="n">2</div><b>Make Payment</b>Pay using UPI QR or UPI ID</div><div class="step"><div class="n">3</div><b>Get Instant Credit</b>Amount will be added instantly</div></div></section>
+<div class="info" id="uinfo" style="display:none">ℹ Send USDT (TRC20) to the address on next step to get instant credit.</div>
+<div class="banner">GET <strong>3% EXTRA</strong><br><span style="font-size:17px">On Every Deposit</span></div><button class="primary" id="go">Proceed to Pay →</button>
+</div></main>
 <script>
-let amount = 0;
-let spins = 0;
-
-function selectPack(a,s){
-  amount = a;
-  spins = s;
-  document.querySelectorAll('.box').forEach(b=>b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-}
-
-function goPay(){
-  if(amount===0){
-    alert("❌ Please select a pack");
-    return;
-  }
-  location.href = `pay.html?amount=${amount}&spins=${spins}`;
-}
+const ua=[200,500,700,1000,2000,5000,10000,20000],sa=[10,20,30,50,100,200,500,1000];let m="upi";const g=document.getElementById("grid"),v=document.getElementById("val");
+function render(){const a=m==="upi"?ua:sa;g.innerHTML=a.map(n=>`<button class="amt ${((m==="upi"&&n===1000)||(m==="usdt"&&n===50))?"active":""}" data-v="${n}">${m==="upi"?"₹"+n.toLocaleString():n+" USDT"}</button>`).join("");document.querySelectorAll(".amt").forEach(b=>b.onclick=()=>{document.querySelectorAll(".amt").forEach(x=>x.classList.remove("active"));b.classList.add("active");v.value=b.dataset.v;upd()})}
+function upd(){const n=Number(v.value||0),r=n*1.03;base.textContent=m==="upi"?`₹${n.toFixed(2)}`:`${n.toFixed(2)} USDT`;got.textContent=m==="upi"?`₹${r.toFixed(2)}`:`${r.toFixed(2)} USDT`}
+function sw(x){m=x;upi.classList.toggle("active",m==="upi");usdt.classList.toggle("active",m==="usdt");title.textContent=m==="upi"?"Select Amount":"Select Amount (USDT)";lab.textContent=m==="upi"?"Enter Amount":"Enter Amount (USDT)";unit.textContent=m==="upi"?"₹":"USDT";limit.textContent=m==="upi"?"Min: ₹200 | Max: ₹50,000":"Min: 10 USDT | Max: 5000 USDT";how.style.display=m==="upi"?"block":"none";uinfo.style.display=m==="usdt"?"block":"none";v.value=m==="upi"?1000:50;render();upd()}
+upi.onclick=()=>sw("upi");usdt.onclick=()=>sw("usdt");v.oninput=upd;go.onclick=()=>{const n=Number(v.value||0),min=m==="upi"?200:10,max=m==="upi"?50000:5000;if(n<min||n>max){alert(`Amount must be between ${min} and ${max}`);return}sessionStorage.setItem("depositAmount",n);location.href=m==="upi"?"deposit-upi-pay.html":"deposit-usdt-pay.html"};render();upd();
 </script>
-
-</body>
-</html>
+<script type="module">
+import {auth,db,USERS_COLLECTION} from "./firebase-config.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {doc,getDoc} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+onAuthStateChanged(auth,async u=>{if(!u){location.replace("login.html");return}try{const s=await getDoc(doc(db,USERS_COLLECTION,u.uid));const b=s.exists()?Number(s.data().balance||0):0;document.querySelectorAll("[data-balance]").forEach(x=>x.textContent=b.toFixed(2))}catch(e){console.error(e)}});
+</script>
+</body></html>
