@@ -52,7 +52,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const amount = Number(sessionStorage.getItem("depositAmount") || 1000);
-const creditedAmount = Number((amount * 1.03).toFixed(2));
+const creditedAmount = Number((amount * 1.10).toFixed(2));
 
 const amountElement = document.getElementById("oa");
 const timerElement = document.getElementById("timer");
@@ -170,7 +170,7 @@ submitButton.addEventListener("click", async () => {
       currency: "INR",
       amount,
       amountInr: amount,
-      bonusPercent: 3,
+      bonusPercent: 10,
       bonusAmount: Number((creditedAmount - amount).toFixed(2)),
       receiveAmount: creditedAmount,
       creditedAmount,
