@@ -207,48 +207,113 @@ button,a,input{font:inherit;-webkit-tap-highlight-color:transparent}
 </div></main><div id="toast" class="toast"></div>
 
 <script type="module">
-import {auth,db,USERS_COLLECTION} from "./firebase-config.js";
-import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import {doc,getDoc,collection,query,where,getDocs} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db, USERS_COLLECTION } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const inviteCode=document.getElementById("inviteCode");
-const totalInvites=document.getElementById("totalInvites");
-const activeInvites=document.getElementById("activeInvites");
-const referralEarnings=document.getElementById("referralEarnings");
-const toast=document.getElementById("toast");
-let shareUrl="";
+const inviteCode = document.getElementById("inviteCode");
+const totalInvites = document.getElementById("totalInvites");
+const activeInvites = document.getElementById("activeInvites");
+const referralEarnings = document.getElementById("referralEarnings");
+const toast = document.getElementById("toast");
 
-function show(message,error=false){
-  toast.textContent=message;
-  toast.className="toast show"+(error?" error":"");
-  setTimeout(()=>toast.className="toast",2300);
+let shareUrl = "";
+
+function show(message, error = false) {
+  toast.textContent = message;
+  toast.className = "toast show" + (error ? " error" : "");
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 2300);
 }
 
-onAuthStateChanged(auth,async user=>{
-  if(!user){location.replace("login.html");return;}
-  try{
-    const snap=await getDoc(doc(db,USERS_COLLECTION,user.uid));
-    const data=snap.exists()?snap.data():{};
-    const code=data.ownInviteCode||user.uid.slice(0,8).toUpperCase();
-    inviteCode.textContent=code;
-    referralEarnings.textContent=Number(data.referralEarnings||0).toFixed(2);
-    shareUrl=`${location.origin}${location.pathname.replace("invite.html","register.html")}?invite=${encodeURIComponent(code)}`;
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    location.replace("login.html");
+    return;
+  }
 
-    const refQuery=query(collection(db,"referrals"),where("referrerUid","==",user.uid));
-    const refSnap=await getDocs(refQuery);
-    const rows=refSnap.docs.map(d=>d.data());
-    totalInvites.textContent=rows.length;
-    activeInvites.textContent=rows.filter(x=>["active","registered"].includes(String(x.status||"").toLowerCase())).length;
-  }catch(error){console.error(error);show("Could not load invitation details.",true);}
+  try {
+    const snap = await getDoc(doc(db, USERS_COLLECTION, user.uid));
+    const data = snap.exists() ? snap.data() : {};
+
+    const code = data.ownInviteCode || user.uid.slice(0, 8).toUpperCase();
+
+    inviteCode.textContent = code;
+    referralEarnings.textContent = Number(data.referralEarnings || 0).toFixed(2);
+
+    // Registration page link
+    shareUrl = `${window.location.origin}/register.html?invite=${encodeURIComponent(code)}`;
+
+    const refQuery = query(
+      collection(db, "referrals"),
+      where("referrerUid", "==", user.uid)
+    );
+
+    const refSnap = await getDocs(refQuery);
+    const rows = refSnap.docs.map(doc => doc.data());
+
+    totalInvites.textContent = rows.length;
+    activeInvites.textContent = rows.filter(row =>
+      ["registered", "active"].includes(String(row.status || "").toLowerCase())
+    ).length;
+
+  } catch (err) {
+    console.error(err);
+    show("Could not load invitation details.", true);
+  }
 });
 
-document.getElementById("copyCode").onclick=async()=>{
-  await navigator.clipboard.writeText(inviteCode.textContent.trim());
-  show("Invitation code copied.");
+// Copy Invite Code
+document.getElementById("copyCode").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(inviteCode.textContent.trim());
+    show("Invitation code copied.");
+  } catch {
+    show("Copy failed.", true);
+  }
 };
-document.getElementById("shareInvite").onclick=async()=>{
-  const text=`Join Mone Cash using my invitation code ${inviteCode.textContent.trim()}. ${shareUrl}`;
-  if(navigator.share){await navigator.share({title:"Mone Cash Invitation",text,url:shareUrl});}
-  else{await navigator.clipboard.writeText(text);show("Invitation link copied.");}
+
+// Share Invite Link
+document.getElementById("shareInvite").onclick = async () => {
+
+  const code = inviteCode.textContent.trim();
+
+  const link = `${window.location.origin}/register.html?invite=${encodeURIComponent(code)}`;
+
+  const text =
+`🎉 Join Mone Cash!
+
+Use my invitation code: ${code}
+
+Register here:
+${link}`;
+
+  try {
+
+    if (navigator.share) {
+
+      await navigator.share({
+        title: "Mone Cash Invitation",
+        text: text,
+        url: link
+      });
+
+    } else {
+
+      await navigator.clipboard.writeText(text);
+      show("Invitation link copied.");
+
+    }
+
+  } catch (err) {
+
+    if (err.name !== "AbortError") {
+      await navigator.clipboard.writeText(text);
+      show("Invitation link copied.");
+    }
+
+  }
+
 };
-</script></body></html>
+  </script></body></html>
