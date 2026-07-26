@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3157d5">
+
+    <title>DX Pay - Deposit</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #3157d5;
+            --primary-dark: #2444ad;
+            --background: #f4f6fa;
+            --card: #ffffff;
+            --text: #1d2433;
+            --muted: #707789;
+            --border: #e2e6ef;
+            --success: #15803d;
+            --danger: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--background);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 520px;
+            min-height: 100vh;
+            margin: auto;
+            background: var(--background);
+        }
+
+        .header {
+            height: 68px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .secure {
+            color: var(--success);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 5px 18px rgba(26, 38, 70, 0.05);
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 21px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .amount-box {
+            display: flex;
+            align-items: center;
+            border: 1.5px solid var(--border);
+            border-radius: 13px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            transition: 0.25s;
+        }
+
+        .amount-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.1);
+        }
+
+        .currency {
+            padding: 14px;
+            background: #f4f6fb;
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 800;
+            border-right: 1px solid var(--border);
+        }
+
+        .amount-box input {
+            flex: 1;
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .quick-btn {
+            min-height: 40px;
+            border: 1.5px solid var(--primary);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.2s, color 0.2s;
+        }
+
+        .quick-btn:hover,
+        .quick-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .quick-btn:active {
+            transform: scale(0.93);
+        }
+
+        .qr-area {
+            width: 215px;
+            min-height: 215px;
+            margin: 0 auto 14px;
+            padding: 11px;
+            display: grid;
+            place-items: center;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            max-width: 190px;
+            width: 100%;
+            height: auto;
+        }
+
+        .qr-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 17px;
+        }
+
+        .label {
+            display: block;
+            color: #40475a;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .upi-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 7px 7px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            background: #fafbfe;
+        }
+
+        .upi-id {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+            font-weight: 700;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .copy-btn {
+            min-width: 74px;
+            min-height: 39px;
+            padding: 0 13px;
+            border: 1.5px solid var(--primary);
+            border-radius: 9px;
+            background: #ffffff;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.94);
+        }
+
+        .payment-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .apps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 9px;
+        }
+
+        .app-btn {
+            min-height: 78px;
+            padding: 9px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 1.5px solid var(--border);
+            border-radius: 13px;
+            background: #ffffff;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .app-btn:hover {
+            border-color: var(--primary);
+            background: #f5f7ff;
+        }
+
+        .app-btn:active {
+            transform: scale(0.95);
+        }
+
+        .app-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .phonepe {
+            background: #5f259f;
+        }
+
+        .paytm {
+            background: #0b9ed8;
+        }
+
+        .gpay {
+            background: #4285f4;
+        }
+
+        .bhim {
+            background: #ef6c00;
+        }
+
+        .amazon {
+            background: #232f3e;
+        }
+
+        .other {
+            background: #475569;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .input {
+            width: 100%;
+            min-height: 50px;
+            padding: 0 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            background: #ffffff;
+            color: var(--text);
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            min-height: 52px;
+            border: 1.5px solid var(--primary);
+            border-radius: 12px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.97);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            padding-left: 19px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 25px;
+            z-index: 100;
+            width: calc(100% - 36px);
+            max-width: 420px;
+            padding: 13px 16px;
+            border-radius: 12px;
+            background: #182033;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, 20px);
+            transition: 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+
+        @media (max-width: 390px) {
+            .content {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .quick-amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .apps {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .app-btn {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="header">
+        <div class="brand">
+            <div class="brand-logo">DX</div>
+            <div class="brand-name">DX Pay</div>
+        </div>
+
+        <div class="secure">● Secure Payment</div>
+    </header>
+
+    <main class="content">
+
+        <section class="card">
+            <h1 class="page-title">Add Money</h1>
+            <p class="page-subtitle">
+                Enter the amount and scan the QR code using any UPI application.
+            </p>
+
+            <label class="label" for="amount">Deposit Amount</label>
+
+            <div class="amount-box">
+                <div class="currency">₹</div>
+
+                <input
+                    type="number"
+                    id="amount"
+                    placeholder="Enter amount"
+                    min="1"
+                    inputmode="decimal"
+                >
+            </div>
+
+            <div class="quick-amounts">
+                <button class="quick-btn" type="button" data-amount="500">₹500</button>
+                <button class="quick-btn" type="button" data-amount="1000">₹1,000</button>
+                <button class="quick-btn" type="button" data-amount="2000">₹2,000</button>
+                <button class="quick-btn" type="button" data-amount="5000">₹5,000</button>
+            </div>
+
+            <div class="qr-area">
+                <div id="qrcode"></div>
+            </div>
+
+            <p class="qr-note">
+                QR code will update automatically after entering the amount.
+            </p>
+
+            <label class="label">UPI ID</label>
+
+            <div class="upi-box">
+                <div class="upi-id" id="upiText">dxpay@upi</div>
+
+                <button class="copy-btn" type="button" id="copyBtn">
+                    Copy
+                </button>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="payment-title">Pay using any UPI app</div>
+
+            <div class="apps">
+
+                <button class="app-btn" type="button" data-app="phonepe">
+                    <span class="app-icon phonepe">Pe</span>
+                    PhonePe
+                </button>
+
+                <button class="app-btn" type="button" data-app="paytm">
+                    <span class="app-icon paytm">P</span>
+                    Paytm
+                </button>
+
+                <button class="app-btn" type="button" data-app="gpay">
+                    <span class="app-icon gpay">G</span>
+                    Google Pay
+                </button>
+
+                <button class="app-btn" type="button" data-app="bhim">
+                    <span class="app-icon bhim">B</span>
+                    BHIM
+                </button>
+
+                <button class="app-btn" type="button" data-app="amazon">
+                    <span class="app-icon amazon">a</span>
+                    Amazon Pay
+                </button>
+
+                <button class="app-btn" type="button" data-app="other">
+                    <span class="app-icon other">UPI</span>
+                    Other App
+                </button>
+
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="payment-title">Submit Payment Details</div>
+
+            <form id="depositForm">
+
+                <div class="form-group">
+                    <label class="label" for="utr">UTR / Transaction ID</label>
+
+                    <input
+                        class="input"
+                        type="text"
+                        id="utr"
+                        name="utr"
+                        placeholder="Enter 12-digit UTR number"
+                        maxlength="22"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+                <button class="submit-btn" type="submit" id="submitBtn">
+                    Submit Payment
+                </button>
+
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="payment-title">Payment Instructions</div>
+
+            <ol class="instructions">
+                <li>Enter the exact deposit amount.</li>
+                <li>Scan the QR code or open your preferred UPI app.</li>
+                <li>Complete the payment only to the displayed UPI ID.</li>
+                <li>Copy the UTR number from your payment application.</li>
+                <li>Submit the correct UTR for payment verification.</li>
+            </ol>
+        </section>
+
+    </main>
+
+</div>
+
+<div class="toast" id="toast">Message</div>
+
+<script>
+    /*
+    |--------------------------------------------------------------------------
+    | DX Pay Deposit Page Settings
+    |--------------------------------------------------------------------------
+    */
+
+    const paymentSettings = {
+        upiId: "dxpay@upi",
+        payeeName: "DX Pay",
+        minimumAmount: 100
+    };
+
+    const amountInput = document.getElementById("amount");
+    const upiText = document.getElementById("upiText");
+    const copyBtn = document.getElementById("copyBtn");
+    const depositForm = document.getElementById("depositForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const toast = document.getElementById("toast");
+    const qrContainer = document.getElementById("qrcode");
+
+    let toastTimer;
+
+    upiText.textContent = paymentSettings.upiId;
+
+    function showToast(message) {
+        clearTimeout(toastTimer);
+
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        toastTimer = setTimeout(() => {
+            toast.classList.remove("show");
+        }, 2200);
+    }
+
+    function getAmount() {
+        const amount = Number(amountInput.value);
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return "";
+        }
+
+        return amount.toFixed(2);
+    }
+
+    function createUpiLink() {
+        const params = new URLSearchParams({
+            pa: paymentSettings.upiId,
+            pn: paymentSettings.payeeName,
+            cu: "INR"
+        });
+
+        const amount = getAmount();
+
+        if (amount) {
+            params.set("am", amount);
+        }
+
+        return "upi://pay?" + params.toString();
+    }
+
+    function generateQr() {
+        qrContainer.innerHTML = "";
+
+        new QRCode(qrContainer, {
+            text: createUpiLink(),
+            width: 190,
+            height: 190,
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    generateQr();
+
+    let qrUpdateTimer;
+
+    amountInput.addEventListener("input", () => {
+        clearTimeout(qrUpdateTimer);
+
+        document.querySelectorAll(".quick-btn").forEach(button => {
+            button.classList.remove("active");
+        });
+
+        qrUpdateTimer = setTimeout(generateQr, 250);
+    });
+
+    document.querySelectorAll(".quick-btn").forEach(button => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll(".quick-btn").forEach(item => {
+                item.classList.remove("active");
+            });
+
+            button.classList.add("active");
+            amountInput.value = button.dataset.amount;
+
+            generateQr();
+        });
+    });
+
+    copyBtn.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(paymentSettings.upiId);
+
+            copyBtn.textContent = "Copied";
+            showToast("UPI ID copied successfully");
+
+            setTimeout(() => {
+                copyBtn.textContent = "Copy";
+            }, 1600);
+        } catch (error) {
+            const temporaryInput = document.createElement("input");
+
+            temporaryInput.value = paymentSettings.upiId;
+            document.body.appendChild(temporaryInput);
+
+            temporaryInput.select();
+            document.execCommand("copy");
+            temporaryInput.remove();
+
+            showToast("UPI ID copied successfully");
+        }
+    });
+
+    document.querySelectorAll(".app-btn").forEach(button => {
+        button.addEventListener("click", () => {
+            const amount = Number(amountInput.value);
+
+            if (!amount || amount < paymentSettings.minimumAmount) {
+                showToast(
+                    "Please enter minimum ₹" +
+                    paymentSettings.minimumAmount +
+                    " amount"
+                );
+
+                amountInput.focus();
+                return;
+            }
+
+            /*
+             * Android phones will try to open an installed UPI application.
+             * The user can select PhonePe, Paytm, Google Pay or another app.
+             */
+            window.location.href = createUpiLink();
+        });
+    });
+
+    depositForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const amount = Number(amountInput.value);
+        const utrInput = document.getElementById("utr");
+        const utr = utrInput.value.trim();
+
+        if (!amount || amount < paymentSettings.minimumAmount) {
+            showToast(
+                "Minimum deposit amount is ₹" +
+                paymentSettings.minimumAmount
+            );
+
+            amountInput.focus();
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9]{8,22}$/.test(utr)) {
+            showToast("Please enter a valid UTR number");
+            utrInput.focus();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+
+        /*
+         * Backend connection example:
+         *
+         * fetch("submit-deposit.php", {
+         *     method: "POST",
+         *     headers: {
+         *         "Content-Type": "application/json"
+         *     },
+         *     body: JSON.stringify({
+         *         amount: amount,
+         *         utr: utr,
+         *         upi_id: paymentSettings.upiId
+         *     })
+         * })
+         */
+
+        setTimeout(() => {
+            showToast("Payment submitted successfully");
+
+            depositForm.reset();
+            amountInput.value = "";
+
+            document.querySelectorAll(".quick-btn").forEach(button => {
+                button.classList.remove("active");
+            });
+
+            generateQr();
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Payment";
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>
